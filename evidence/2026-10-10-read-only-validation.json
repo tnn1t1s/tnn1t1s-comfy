@@ -1,0 +1,57 @@
+{
+  "discovery_pass": true,
+  "doctor": {
+    "ok": true,
+    "checks": [
+      {
+        "check": "ComfyUI API",
+        "ok": true,
+        "detail": "Responsive; this does not test model availability or a CUDA render"
+      },
+      {
+        "check": "ComfyUI queue",
+        "ok": true,
+        "detail": {
+          "running": 0,
+          "pending": 0
+        }
+      },
+      {
+        "check": "Required nodes",
+        "ok": true,
+        "missing": []
+      },
+      {
+        "check": "Cue API",
+        "ok": true
+      }
+    ]
+  },
+  "prior_cancel": {
+    "id": "ops-release-84ee7e030a-cancel",
+    "status": "cancelled",
+    "reason_code": "killed_cancelled",
+    "reason": "killed: cancelled by user",
+    "cancelled_by": "team:medios-ops",
+    "attempts": 1,
+    "latest_attempt": 0,
+    "requested": {
+      "cpus": 0.5,
+      "mem": 4096,
+      "gpus": 1,
+      "placement": {
+        "node_attributes": {
+          "containerizer": "medios",
+          "gpu": "gb10"
+        }
+      },
+      "data": [
+        {
+          "store": "results",
+          "container_path": "/models",
+          "mode": "RW"
+        }
+      ]
+    }
+  }
+}
