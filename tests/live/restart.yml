@@ -1,0 +1,65 @@
+---
+- name: Restart only the isolated acceptance gateway
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Require the test application
+      ansible.builtin.assert:
+        that:
+          - expected_app == '/svc/tnn1t1s-comfy-gateway-test'
+    - name: Read the application
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/apps{{ expected_app }}"
+        return_content: true
+      register: current
+    - name: Require the current version already serving
+      ansible.builtin.assert:
+        that:
+          - current.json.instances | length == 1
+          - current.json.instances[0].condition == 'Running'
+          - current.json.instances[0].health == 'Healthy'
+          - current.json.instances[0].launched_app_version == current.json.version
+    - name: Read deployment bookkeeping
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/deployments"
+        return_content: true
+      register: migrations
+    - name: Clear only stale migration bookkeeping after verifying arrival
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/deployments{{ expected_app }}"
+        method: DELETE
+        status_code: [200, 204, 404]
+      when: migrations.json.deployments | selectattr('app_id', 'equalto', expected_app) | list | length > 0
+    - name: Stop gateway while the Cue job continues
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/apps{{ expected_app }}"
+        method: PUT
+        body_format: json
+        body: {instances: 0}
+        status_code: [200, 201]
+    - name: Wait for stopped gateway
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/apps{{ expected_app }}"
+        return_content: true
+      register: stopped
+      until: stopped.json.instances | selectattr('condition', 'equalto', 'Running') | list | length == 0
+      retries: 30
+      delay: 1
+    - name: Start the same gateway journal
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/apps{{ expected_app }}"
+        method: PUT
+        body_format: json
+        body: {instances: 1}
+        status_code: [200, 201]
+    - name: Wait for recovered gateway
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/apps{{ expected_app }}"
+        return_content: true
+      register: recovered
+      until: >-
+        recovered.json.instances | selectattr('condition', 'equalto', 'Running') |
+        selectattr('health', 'defined') | selectattr('health', 'equalto', 'Healthy') | list | length == 1
+      retries: 45
+      delay: 2

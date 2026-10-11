@@ -1,0 +1,69 @@
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Read legacy application
+      ansible.builtin.uri:
+        url: '{{ fennel_url }}/v2/apps{{ legacy_app }}'
+        return_content: true
+      register: legacy
+    - name: Require intended legacy service
+      ansible.builtin.assert:
+        that:
+          - window_action in ["open", "restore"]
+          - legacy.json.id == legacy_app
+          - legacy.json.gpus == 1
+    - name: Check no active or pending legacy render
+      ansible.builtin.uri:
+        url: '{{ legacy_url }}/queue'
+        return_content: true
+      register: queue
+      when: window_action == 'open'
+    - name: Refuse to interrupt a render
+      ansible.builtin.assert:
+        that:
+          - queue.json.queue_running | length == 0
+          - queue.json.queue_pending | length == 0
+      when: window_action == 'open'
+    - name: Preserve legacy files in persistent storage
+      ansible.builtin.shell: |
+        set -eu
+        test -d /proc/{{ legacy_pid }}/root{{ legacy_comfy_dir }}/input
+        mkdir -p {{ backup_host_dir | quote }}
+        tar -C /proc/{{ legacy_pid }}/root{{ legacy_comfy_dir }} -cf {{ (backup_host_dir + '/legacy-data.tar') | quote }} input output user
+        sha256sum {{ (backup_host_dir + '/legacy-data.tar') | quote }}
+      delegate_to: '{{ legacy_host }}'
+      vars:
+        ansible_connection: ssh
+      become: true
+      when: window_action == 'open'
+    - name: Set legacy capacity for acceptance window
+      ansible.builtin.uri:
+        url: '{{ fennel_url }}/v2/apps{{ legacy_app }}'
+        method: PUT
+        body_format: json
+        body:
+          instances: "{{ 0 if window_action == 'open' else 1 }}"
+        status_code: [200, 201]
+    - name: Wait for legacy capacity release or restoration
+      ansible.builtin.uri:
+        url: '{{ fennel_url }}/v2/apps{{ legacy_app }}'
+        return_content: true
+      register: observed
+      until: >-
+        (window_action == 'open' and observed.json.instances | selectattr('condition', 'equalto', 'Running') | list | length == 0) or
+        (window_action == 'restore' and observed.json.instances | selectattr('condition', 'equalto', 'Running') | selectattr('health', 'defined') | selectattr('health', 'equalto', 'Healthy') | list | length == 1)
+      retries: 90
+      delay: 2
+    - name: Restore preserved uploads and outputs to replacement
+      ansible.builtin.shell: |
+        set -eu
+        port={{ observed.json.instances[0].ports[0] }}
+        task_pid=$(pgrep -f "^/opt/venv/bin/python main.py --listen 0.0.0.0 --port ${port}$")
+        test -n "$task_pid"
+        tar -C "/proc/${task_pid}/root{{ legacy_comfy_dir }}" -xf {{ (backup_host_dir + '/legacy-data.tar') | quote }} input output
+      delegate_to: '{{ legacy_host }}'
+      vars:
+        ansible_connection: ssh
+      become: true
+      when: window_action == 'restore'
