@@ -63,3 +63,24 @@ fixture used a 20-second startup delay before the worker bootstrap to provide a
 repeatable interruption window; that delay is not part of build_spec.py's
 normal worker command. If a probe fails, inspect the printed prompt ID and
 cancel its `comfy-<prompt-id>` Cue job before repeating.
+
+
+For progress/browser acceptance, build a separate **CPU-only** fixture from an
+explicit isolated profile. This installs `CueRelayProbe` only inside the test
+gateway and worker; it is not shipped in the application package:
+
+```sh
+python3 tests/live/build_progress_spec.py local/profile.json --output local/gateway.json
+# Apply this spec with the Ansible invocation above, using the isolated app ID.
+python3 tests/live/progress.py --url "$COMFY_URL" --evidence local/progress.json
+npm install --prefix local/browser playwright
+NODE_PATH="$PWD/local/browser/node_modules" COMFY_URL="$COMFY_URL" \
+  node tests/live/browser.cjs
+```
+
+The websocket probe needs aiohttp; the browser probe uses installed Google
+Chrome. These are test dependencies. Browser evidence defaults to
+`local/browser-evidence/` (override `EVIDENCE_DIR`). The fixture runs for about
+10 seconds and saves a small image. Both probes request cancellation on failure
+and wait for terminal history, reporting an unconfirmed cancellation explicitly.
+The worker still has the profile's finite runtime limit.

@@ -18,6 +18,11 @@ def build(profile):
     config['worker_spec']['command'], _ = command('tnn1t1s_comfy.worker', profile.get('python', '/opt/venv/bin/python'))
     app.setdefault('env', {})['COMFY_GATEWAY_CONFIG'] = json.dumps(config)
     app.setdefault('labels', {})['source.sha256'] = revision
+    # Stay below Linux's per-argument/environment-string exec limit.
+    if len(app['cmd'].encode()) > 65536 or any(
+            len((key + '=' + str(value)).encode()) > 65536
+            for key, value in app['env'].items()):
+        raise ValueError('Deployment command/environment exceeds 64 KiB; move large data to artifacts')
     return app
 
 
