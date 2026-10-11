@@ -1,0 +1,430 @@
+{
+  "events": [
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 1,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 4,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 7,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 10,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 13,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 17,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 20,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 23,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 26,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 29,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 32,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 36,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 39,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 43,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 47,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "progress",
+      "data": {
+        "workflow_id": "b5fbd508-8ecb-4d19-9b8e-86bce3a6d026",
+        "value": 50,
+        "max": 50,
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "2"
+      }
+    },
+    {
+      "name": "b_preview_with_metadata",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "b_preview",
+      "data": {
+        "size": 646
+      }
+    },
+    {
+      "name": "executed",
+      "data": {
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+        "node": "3",
+        "display_node": "3",
+        "output": {
+          "images": [
+            {
+              "filename": "ComfyUI_00001_.png",
+              "subfolder": "comfy-9da78667-7e69-4856-8b48-b9538902589f/6cd18e63af814fb7a02f0dcccb802f6f/output",
+              "type": "output",
+              "metadata": {
+                "kind": "image",
+                "width": 32,
+                "height": 32
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "execution_success",
+      "data": {
+        "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f"
+      }
+    }
+  ],
+  "outputs": {
+    "3": {
+      "images": [
+        {
+          "filename": "ComfyUI_00001_.png",
+          "subfolder": "comfy-9da78667-7e69-4856-8b48-b9538902589f/6cd18e63af814fb7a02f0dcccb802f6f/output",
+          "type": "output",
+          "metadata": {
+            "kind": "image",
+            "width": 32,
+            "height": 32
+          }
+        }
+      ]
+    }
+  },
+  "images": [
+    {
+      "id": "1",
+      "type": "EmptyImage"
+    },
+    {
+      "id": "2",
+      "type": "CueRelayProbe",
+      "images": [
+        {
+          "complete": true,
+          "width": 32,
+          "height": 32
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "type": "SaveImage",
+      "images": [
+        {
+          "complete": true,
+          "width": 32,
+          "height": 32
+        }
+      ]
+    }
+  ],
+  "prompt_id": "9da78667-7e69-4856-8b48-b9538902589f",
+  "preview_decoded": true
+}

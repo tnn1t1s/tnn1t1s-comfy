@@ -1,5 +1,5 @@
 """One invocation, one private ComfyUI process, one immutable result directory."""
-import hashlib
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -11,6 +11,7 @@ import time
 import uuid
 from .artifacts import confined, digest
 from .client import API
+from .progress import Capture
 
 
 def atomic_json(path, value):
@@ -33,6 +34,9 @@ def execute():
     root = Path(config['output_root']).resolve()
     attempt = root / payload['job_id'] / uuid.uuid4().hex
     attempt.mkdir(parents=True)
+    # Serialize retry telemetry writers as well as private render processes.
+    live_lock = open(attempt.parent / 'live.lock', 'a')
+    fcntl.flock(live_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     output, temporary = attempt / 'output', attempt / 'temp'
     output.mkdir(); temporary.mkdir()
     with socket.socket() as sock:
@@ -50,6 +54,7 @@ def execute():
         def interrupted(signum, frame):
             raise InterruptedError('Worker cancelled')
         signal.signal(signal.SIGTERM, interrupted)
+        capture = None
         try:
             deadline = time.monotonic() + config.get('timeout', 600)
             while time.monotonic() < deadline:
@@ -62,8 +67,12 @@ def execute():
                     time.sleep(.25)
             else:
                 raise TimeoutError('ComfyUI startup timed out')
+            capture = Capture(f'http://127.0.0.1:{port}/ws?clientId=' + payload['prompt_id'],
+                              attempt.parent / 'live.json', payload['prompt_id'])
+            capture.start()
             response = api.request('/prompt', {'prompt_id': payload['prompt_id'],
                 'prompt': payload['graph'], 'extra_data': payload['extra_data'],
+                'client_id': payload['prompt_id'],
                 'partial_execution_targets': payload['outputs']})
             if response.get('prompt_id') != payload['prompt_id']:
                 raise RuntimeError('ComfyUI did not accept the requested prompt')
@@ -103,6 +112,8 @@ def execute():
             atomic_json(path, manifest)
             return {'manifest': str(path.relative_to(root)), 'sha256': digest(path)}
         finally:
+            if capture is not None:
+                capture.close()
             if child.poll() is None:
                 os.killpg(child.pid, signal.SIGTERM)
             try:
@@ -110,6 +121,7 @@ def execute():
             except subprocess.TimeoutExpired:
                 os.killpg(child.pid, signal.SIGKILL)
                 child.wait()
+            live_lock.close()
 
 
 if __name__ == '__main__':

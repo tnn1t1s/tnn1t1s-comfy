@@ -1,4 +1,5 @@
 """Pinned ComfyUI queue adapter, installed by gateway.py."""
+import asyncio
 import copy
 import json
 import os
@@ -10,6 +11,7 @@ import execution
 import server
 from tnn1t1s_comfy.client import Cue, TERMINAL
 from tnn1t1s_comfy.engine import Engine
+from tnn1t1s_comfy.progress import Relay
 
 config = json.loads(os.environ['COMFY_GATEWAY_CONFIG'])
 
@@ -32,6 +34,8 @@ class RemoteQueue(execution.PromptQueue):
     def __init__(self, instance):
         super().__init__(instance)
         self.refresh()
+        self.relay = Relay()
+        self.relay_future = None
         threading.Thread(target=self.watch, daemon=True).start()
 
     def refresh(self):
@@ -50,15 +54,24 @@ class RemoteQueue(execution.PromptQueue):
                 state = record['state']
                 if prior.get(record['id']) != state:
                     client = record['item'][3].get('client_id')
-                    if state == 'running':
+                    if state == 'running' and client:
                         self.server.send_sync('execution_start', {'prompt_id': record['id']}, client)
-                    if state in TERMINAL:
-                        if state != 'succeeded':
+                    if state in TERMINAL and client:
+                        if state == 'succeeded':
+                            for node, output in record['history']['outputs'].items():
+                                self.server.send_sync('executed', {'prompt_id': record['id'],
+                                    'node': node, 'display_node': node, 'output': output}, client)
+                            self.server.send_sync('execution_success', {'prompt_id': record['id']}, client)
+                        else:
                             self.server.send_sync('execution_interrupted' if state == 'cancelled' else 'execution_error',
                                 {'prompt_id': record['id'], 'exception_message': record['error']}, client)
                         self.server.send_sync('executing', {'node': None, 'prompt_id': record['id']}, client)
                     prior[record['id']] = state
                     self.server.queue_updated()
+            if self.relay_future is None or self.relay_future.done():
+                self.relay_future = asyncio.run_coroutine_threadsafe(
+                    self.relay.publish(self.server, engine.records(),
+                                       config['worker_config']['output_root']), self.server.loop)
             time.sleep(.5)
 
     def get(self, timeout=None):

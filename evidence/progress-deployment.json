@@ -1,0 +1,59 @@
+{
+  "app_version": "2026-10-11T01:03:05.073Z",
+  "source_sha256": "edeffe799f2d2d571c246f3099afb00896709274d7dd643a51d5312bf9899c4a",
+  "gateway_gpus": 0,
+  "instances": [
+    {
+      "id": "svc_tnn1t1s-comfy-gateway-test.instance-4cb82b50-e132-4d72-afd0-5ead33af5335",
+      "app_id": "/svc/tnn1t1s-comfy-gateway-test",
+      "goal": "Running",
+      "condition": "Running",
+      "task_id": "svc_tnn1t1s-comfy-gateway-test.instance-4cb82b50-e132-4d72-afd0-5ead33af5335.24",
+      "incarnation": 24,
+      "agent_info": {
+        "host": "100.122.27.11",
+        "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "attributes": {
+          "containerizer": "medios",
+          "gpu": "gb10",
+          "gpu_isolation": "module",
+          "images": "docker"
+        }
+      },
+      "ports": [
+        33008
+      ],
+      "created_at": "2026-10-11T00:44:53.225Z",
+      "updated_at": "2026-10-11T01:03:05.612Z",
+      "last_terminal_task": {
+        "id": "svc_tnn1t1s-comfy-gateway-test.instance-4cb82b50-e132-4d72-afd0-5ead33af5335.23",
+        "app_id": "/svc/tnn1t1s-comfy-gateway-test",
+        "instance_id": "svc_tnn1t1s-comfy-gateway-test.instance-4cb82b50-e132-4d72-afd0-5ead33af5335",
+        "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "container_id": "223bba7c-0e4f-44dd-95c4-4e3ac4321772",
+        "condition": "Killed",
+        "staged_at": "2026-10-11T01:00:46.757Z",
+        "started_at": "2026-10-11T01:00:47.090Z",
+        "finished_at": "2026-10-11T01:03:05.249Z",
+        "status_message": "Command terminated with signal Terminated",
+        "status_source": "SOURCE_EXECUTOR"
+      },
+      "health": "Healthy",
+      "launched_app_version": "2026-10-11T01:03:05.073Z"
+    }
+  ],
+  "deployments": [
+    {
+      "id": "svc_tnn1t1s-comfy-gateway-test.deploy-58b08cc3b340",
+      "app_id": "/svc/tnn1t1s-comfy-gateway-test",
+      "from_version": "2026-10-11T01:00:46.533Z",
+      "to_version": "2026-10-11T01:03:05.073Z",
+      "strategy": {
+        "minimum_health_capacity": 0,
+        "maximum_over_capacity": 0
+      },
+      "status": "Running",
+      "started_at": "2026-10-11T01:03:05.077Z"
+    }
+  ]
+}

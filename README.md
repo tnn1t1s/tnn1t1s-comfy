@@ -8,12 +8,14 @@ the runtime; this repository owns the integration and its operational tools.
 finite Cue workers, verifies published outputs, and serves normal queue/history/
 file APIs. Live CPU tests passed round trip, gateway restart with one Cue
 attempt, and both cancellation routes. The existing production service is
-unchanged. Full GPU video, browser progress/previews and multi-user behavior
-are not yet accepted.
+unchanged. Live CPU browser tests now show node progress, decoded previews and
+the verified final image; websocket reconnect replays current progress/preview.
+Full GPU video and general multi-user behavior are not yet accepted.
 
 ## Use now
 
-Python 3.10+, no application dependencies:
+Python 3.10+ for the CLI, with no added dependencies. The gateway/worker use
+the pinned ComfyUI runtime and its aiohttp installation:
 
 ```sh
 python3 -m venv .venv

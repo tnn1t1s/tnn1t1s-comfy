@@ -96,8 +96,44 @@ that completed migration's bookkeeping after checking arrival, then scale the
 isolated app down/up. Ordinary apply waits and reports a stuck rollout.
 
 Remaining limits: shared local storage; a single gateway journal owner; known
-sensitive extra-data fields rejected until transport is configured; no per-node
-websocket progress or binary preview relay; no full browser or Wan acceptance.
+sensitive extra-data fields rejected until transport is configured; no full Wan
+acceptance. Browser evidence below uses a small CPU fixture.
 Input uploads use the shared input directory and are not yet snapshotted per
 attempt. No migration of production clients has happened. An ambiguous job that
 Cue no longer knows is retained for diagnosis, never silently relaunched.
+
+
+## Live progress and browser slice — 2026-10-11
+
+Workers connect to their private ComfyUI websocket before submitting a graph,
+negotiating `supports_preview_metadata` with the pinned upstream. A bounded
+latest-state snapshot in shared storage carries node/progress events and the
+already encoded preview frame. The gateway relays it to the submitting client's
+socket. A replacement socket receives the latest state; no idle render worker
+is retained. Intermediate telemetry is replaceable, not an event audit log.
+A per-job filesystem lock prevents two invocations writing live telemetry at
+once. This requires working filesystem locks, as does the gateway journal.
+
+Completion is separate: the gateway emits final node outputs only after Cue is
+terminal and the manifest/files pass verification. An upstream progress or
+completion message cannot mark the job successful.
+
+Evidence in `evidence/`:
+- `progress-reconnect.json`: real finite CPU worker, progress and binary preview,
+  socket disconnect/reconnect, then successful verified publication.
+- `browser-progress.json`, `browser-progress.png`, `browser-output.png`: Chrome
+  using the pinned frontend, visible node progress and decoded preview, followed
+  by a decoded 32x32 final image on SaveImage. The fixture produces previews
+  without requiring a model or GPU; this does not certify Wan previews.
+
+Browser testing caught a protocol mismatch that a binary-frame check missed:
+legacy previews arrived but did not display. Negotiating metadata fixed it.
+Deployment testing also caught an exec environment-size failure; source bundles
+are now gzip-compressed deterministically, and the generator rejects command or
+environment strings over 64 KiB before deployment.
+
+The known Fennel deployment bookkeeping issue (#154) recurred after healthy
+rollouts. Isolated test bookkeeping was cleared only after checking the sole
+replacement was healthy on the requested version. The production Comfy service
+was not modified. Full GPU acceptance needs a coordinated memory handoff from
+that service before a realistically sized finite worker can fit.
