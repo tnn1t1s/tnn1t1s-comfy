@@ -4,10 +4,12 @@ ComfyUI with finite rendering through Cue. Keep the familiar UI; acquire compute
 for a render and release it when the task finishes. Pinned upstream ComfyUI is
 the runtime; this repository owns the integration and its operational tools.
 
-**Current state:** working diagnostics and Cue job controls, plus verified
-integration experiments. The production UI-to-Cue adapter is not complete.
-The existing Fennel ComfyUI service still renders locally and retains resources.
-Do not install the experimental adapter over that service.
+**Current state:** an isolated gateway now persists prompt/job mappings, runs
+finite Cue workers, verifies published outputs, and serves normal queue/history/
+file APIs. Live CPU tests passed round trip, gateway restart with one Cue
+attempt, and both cancellation routes. The existing production service is
+unchanged. Full GPU video, browser progress/previews and multi-user behavior
+are not yet accepted.
 
 ## Use now
 
@@ -51,7 +53,8 @@ There is no Medios client, broker subscription, SSH, or built-in fleet address.
   inputs and output evaluation. `meme_swap` is the first consumer.
 - Fleet configuration: service URLs, image registries, stores and placement.
 
-See [integration roadmap](docs/INTEGRATION.md) for evidence and acceptance gates.
+See [integration roadmap](docs/INTEGRATION.md) for evidence and acceptance gates,
+and [optional deployment](deploy/README.md) for the Fennel recipe.
 The wrapper must not own a pool of idle GPU workers. Image/model disk caches
 may survive task exit without retaining a rendering process.
 
