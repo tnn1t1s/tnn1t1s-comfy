@@ -4,13 +4,16 @@ ComfyUI with finite rendering through Cue. Keep the familiar UI; acquire compute
 for a render and release it when the task finishes. Pinned upstream ComfyUI is
 the runtime; this repository owns the integration and its operational tools.
 
-**Current state:** an isolated gateway now persists prompt/job mappings, runs
-finite Cue workers, verifies published outputs, and serves normal queue/history/
-file APIs. Live CPU tests passed round trip, gateway restart with one Cue
-attempt, and both cancellation routes. The existing production service is
-unchanged. Live CPU browser tests now show node progress, decoded previews and
-the verified final image; websocket reconnect replays current progress/preview.
-Full GPU video and general multi-user behavior are not yet accepted.
+**Current state:** the gateway persists prompt/job mappings, runs finite Cue
+workers, verifies artifacts, and serves normal ComfyUI APIs with live browser
+progress/previews. CPU restart/reconnect/cancellation and full GPU video
+acceptance passed. The 80-frame GPU result matches the previously accepted
+video and audio exactly after decoding. Cancellation during sampling released
+resources, and a same-size CUDA follower succeeded.
+
+The isolated gateway is validated; the original service was restored after the
+capacity window. Production migration, immutable pre-launch input snapshots and
+general multi-user acceptance remain separate work.
 
 ## Use now
 

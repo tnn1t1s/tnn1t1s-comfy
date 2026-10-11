@@ -16,6 +16,10 @@ def build(profile):
         raise ValueError('Gateway and worker images must be pinned by digest')
     app['cmd'], revision = command('tnn1t1s_comfy.gateway', profile.get('python', '/opt/venv/bin/python'))
     config['worker_spec']['command'], _ = command('tnn1t1s_comfy.worker', profile.get('python', '/opt/venv/bin/python'))
+    if profile.get('gateway_prepare'):
+        app['cmd'] = profile['gateway_prepare'] + ' && ' + app['cmd']
+    if profile.get('worker_prepare'):
+        config['worker_spec']['command'] = profile['worker_prepare'] + ' && ' + config['worker_spec']['command']
     app.setdefault('env', {})['COMFY_GATEWAY_CONFIG'] = json.dumps(config)
     app.setdefault('labels', {})['source.sha256'] = revision
     # Stay below Linux's per-argument/environment-string exec limit.
