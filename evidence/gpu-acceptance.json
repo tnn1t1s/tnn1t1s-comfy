@@ -1,0 +1,498 @@
+{
+  "source_sha256": "8686ee1ac9c1a6cb1f402ad5707d5a716acf16bbb9918cc1c849d45b5706e6a1",
+  "worker_image": "localhost:15000/meme-swap-comfy@sha256:bafd5e87f8d46d33f99a947a5408ae70f864fc9aa2b69372983be62d7a4c81df",
+  "cases": [
+    {
+      "mode": "success",
+      "prompt_id": "8a7258d7-0d88-49ad-b497-718828224caf",
+      "passed": true,
+      "submitted_at": 1791682317.730274,
+      "finished_at": 1791682703.081192,
+      "preview_count": 12,
+      "baseline": {
+        "id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "resources": {
+          "store/results": 1.0,
+          "cpus": 12.0,
+          "gpus": 10.0,
+          "store/tabicl-tables": 1.0,
+          "mem": 73728.0,
+          "disk": 500000.0,
+          "ports": "[33001-34000]"
+        },
+        "used_resources": {
+          "disk": 0.0,
+          "mem": 4928.0,
+          "gpus": 0.0,
+          "store/results": 1.0,
+          "cpus": 2.5,
+          "ports": "[33001-33006, 33008-33008]"
+        },
+        "stores": [
+          {
+            "name": "tabicl-tables",
+            "class": "local",
+            "locality": "near",
+            "readers": 12,
+            "writers": 0,
+            "held_readers": 0,
+            "held_writers": 0
+          },
+          {
+            "name": "results",
+            "class": "shared",
+            "locality": "near",
+            "readers": 12,
+            "writers": 12,
+            "held_readers": 0,
+            "held_writers": 1
+          }
+        ]
+      },
+      "after": {
+        "id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "resources": {
+          "store/results": 1.0,
+          "cpus": 12.0,
+          "gpus": 10.0,
+          "store/tabicl-tables": 1.0,
+          "mem": 73728.0,
+          "disk": 500000.0,
+          "ports": "[33001-34000]"
+        },
+        "used_resources": {
+          "disk": 0.0,
+          "mem": 4928.0,
+          "gpus": 0.0,
+          "store/results": 1.0,
+          "cpus": 2.5,
+          "ports": "[33001-33006, 33008-33008]"
+        },
+        "stores": [
+          {
+            "name": "tabicl-tables",
+            "class": "local",
+            "locality": "near",
+            "readers": 12,
+            "writers": 0,
+            "held_readers": 0,
+            "held_writers": 0
+          },
+          {
+            "name": "results",
+            "class": "shared",
+            "locality": "near",
+            "readers": 12,
+            "writers": 12,
+            "held_readers": 0,
+            "held_writers": 1
+          }
+        ]
+      },
+      "remaining_processes": [],
+      "cue_status": "succeeded",
+      "cue_instances": [
+        {
+          "attempt": 0,
+          "task_id": "comfy-8a7258d7-0d88-49ad-b497-718828224caf-0",
+          "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+          "node_host": "100.122.27.11",
+          "state": "TASK_FINISHED",
+          "launched_at": "2026-10-11T01:31:58.913188692Z",
+          "terminal_at": "2026-10-11T01:38:20.517113598Z",
+          "principal": "team:medios-ops",
+          "data": [
+            {
+              "store": "results",
+              "container_path": "/models",
+              "mode": "RW",
+              "exclusive": false,
+              "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4"
+            }
+          ],
+          "exit_code": 0,
+          "result": "{\"manifest\": \"comfy-8a7258d7-0d88-49ad-b497-718828224caf/dd0fa69d727d4a4c9d666989540f9b3b/manifest.json\", \"sha256\": \"08da7a656a08b318b3b7fabc340e23e41b803a32bdb290c1090848abf405f67c\"}\n",
+          "result_truncated": false
+        }
+      ]
+    },
+    {
+      "mode": "cancel",
+      "prompt_id": "20f4ba90-1bbe-466e-8fe0-5385064b7ec6",
+      "passed": true,
+      "submitted_at": 1791682705.185948,
+      "finished_at": 1791682781.711978,
+      "preview_count": 1,
+      "baseline": {
+        "id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "resources": {
+          "store/results": 1.0,
+          "cpus": 12.0,
+          "gpus": 10.0,
+          "store/tabicl-tables": 1.0,
+          "mem": 73728.0,
+          "disk": 500000.0,
+          "ports": "[33001-34000]"
+        },
+        "used_resources": {
+          "disk": 0.0,
+          "mem": 4928.0,
+          "gpus": 0.0,
+          "store/results": 1.0,
+          "cpus": 2.5,
+          "ports": "[33001-33006, 33008-33008]"
+        },
+        "stores": [
+          {
+            "name": "tabicl-tables",
+            "class": "local",
+            "locality": "near",
+            "readers": 12,
+            "writers": 0,
+            "held_readers": 0,
+            "held_writers": 0
+          },
+          {
+            "name": "results",
+            "class": "shared",
+            "locality": "near",
+            "readers": 12,
+            "writers": 12,
+            "held_readers": 0,
+            "held_writers": 1
+          }
+        ]
+      },
+      "after": {
+        "id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "resources": {
+          "store/results": 1.0,
+          "cpus": 12.0,
+          "gpus": 10.0,
+          "store/tabicl-tables": 1.0,
+          "mem": 73728.0,
+          "disk": 500000.0,
+          "ports": "[33001-34000]"
+        },
+        "used_resources": {
+          "disk": 0.0,
+          "mem": 4928.0,
+          "gpus": 0.0,
+          "store/results": 1.0,
+          "cpus": 2.5,
+          "ports": "[33001-33006, 33008-33008]"
+        },
+        "stores": [
+          {
+            "name": "tabicl-tables",
+            "class": "local",
+            "locality": "near",
+            "readers": 12,
+            "writers": 0,
+            "held_readers": 0,
+            "held_writers": 0
+          },
+          {
+            "name": "results",
+            "class": "shared",
+            "locality": "near",
+            "readers": 12,
+            "writers": 12,
+            "held_readers": 0,
+            "held_writers": 1
+          }
+        ]
+      },
+      "remaining_processes": [],
+      "cue_status": "cancelled",
+      "cue_instances": [
+        {
+          "attempt": 0,
+          "task_id": "comfy-20f4ba90-1bbe-466e-8fe0-5385064b7ec6-0",
+          "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+          "node_host": "100.122.27.11",
+          "state": "TASK_KILLED",
+          "launched_at": "2026-10-11T01:38:26.068335109Z",
+          "terminal_at": "2026-10-11T01:39:40.187490734Z",
+          "principal": "team:medios-ops",
+          "data": [
+            {
+              "store": "results",
+              "container_path": "/models",
+              "mode": "RW",
+              "exclusive": false,
+              "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4"
+            }
+          ],
+          "reason": "killed: cancelled by user",
+          "reason_code": "killed_cancelled",
+          "mea_culpa": false,
+          "result": "",
+          "result_truncated": false
+        }
+      ],
+      "cancel_at": 1791682779.138918,
+      "cancel_to_terminal_seconds": 2.5730600357055664,
+      "allocated": {
+        "id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "resources": {
+          "store/results": 1.0,
+          "cpus": 12.0,
+          "gpus": 10.0,
+          "store/tabicl-tables": 1.0,
+          "mem": 73728.0,
+          "disk": 500000.0,
+          "ports": "[33001-34000]"
+        },
+        "used_resources": {
+          "disk": 0.0,
+          "mem": 70464.0,
+          "gpus": 1.0,
+          "store/results": 1.0,
+          "cpus": 6.5,
+          "ports": "[33001-33006, 33008-33008]"
+        },
+        "stores": [
+          {
+            "name": "tabicl-tables",
+            "class": "local",
+            "locality": "near",
+            "readers": 12,
+            "writers": 0,
+            "held_readers": 0,
+            "held_writers": 0
+          },
+          {
+            "name": "results",
+            "class": "shared",
+            "locality": "near",
+            "readers": 12,
+            "writers": 12,
+            "held_readers": 0,
+            "held_writers": 2
+          }
+        ]
+      },
+      "processes_before_cancel": [
+        {
+          "pid": 988661,
+          "cgroup": "0::/medios-gpu/d8dad77a-4bb8-4749-b002-df33ad115d21/leaf\n"
+        },
+        {
+          "pid": 988683,
+          "cgroup": "0::/medios-gpu/d8dad77a-4bb8-4749-b002-df33ad115d21/leaf\n"
+        },
+        {
+          "pid": 988688,
+          "cgroup": "0::/medios-gpu/d8dad77a-4bb8-4749-b002-df33ad115d21/leaf\n"
+        },
+        {
+          "pid": 988689,
+          "cgroup": "0::/medios-gpu/d8dad77a-4bb8-4749-b002-df33ad115d21/leaf\n"
+        }
+      ]
+    }
+  ],
+  "media": {
+    "prompt_id": "8a7258d7-0d88-49ad-b497-718828224caf",
+    "output_node": "save_video",
+    "output_reference": {
+      "filename": "WanAnimate_00001_.mp4",
+      "subfolder": "comfy-8a7258d7-0d88-49ad-b497-718828224caf/dd0fa69d727d4a4c9d666989540f9b3b/output/memeswap",
+      "type": "output",
+      "metadata": {
+        "kind": "video",
+        "width": 848,
+        "height": 480,
+        "duration": 5.0,
+        "fps": 16.0,
+        "frame_count": 80
+      }
+    },
+    "rendered": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "r_frame_rate": "16/1",
+          "duration": "5.000000",
+          "nb_read_frames": "80"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "duration": "5.000000",
+          "nb_read_frames": "216"
+        }
+      ],
+      "file_sha256": "a210a8934604f673f5a931c2b5d1c80789ad2b666012f5f8aa48ad7711b87e37",
+      "video_decoded": {
+        "sha256": "74961f65210978b481cd1930d78e6465d2b408dc11c36be4611e1fabdd9d4e35",
+        "bytes": 97689600
+      },
+      "audio_decoded": {
+        "sha256": "18946429a510efefb01d030eaeadd961212140470be3b898add10e52222f607f",
+        "bytes": 960000
+      },
+      "audio_levels": [
+        "[Parsed_volumedetect_0 @ 0x6000021380b0] mean_volume: -36.5 dB",
+        "[Parsed_volumedetect_0 @ 0x6000021380b0] max_volume: -15.8 dB"
+      ]
+    },
+    "source": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "r_frame_rate": "16/1",
+          "duration": "5.000000",
+          "nb_read_frames": "80"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "duration": "5.000000",
+          "nb_read_frames": "216"
+        }
+      ],
+      "file_sha256": "50a1ca96392a00e763262fac02a657da3087a85b2fcd560e925924e6f7cd2ca5",
+      "video_decoded": {
+        "sha256": "e63a7320dfe82f03f480127f8a9db76a2c81fb9bf9fe2131ba39bf94542755a0",
+        "bytes": 97689600
+      },
+      "audio_decoded": {
+        "sha256": "9408c1e34968a3885c8df2288f89702ab482352dd8edb384762b5c3fef936901",
+        "bytes": 960000
+      },
+      "audio_levels": [
+        "[Parsed_volumedetect_0 @ 0x600001d94b00] mean_volume: -36.4 dB",
+        "[Parsed_volumedetect_0 @ 0x600001d94b00] max_volume: -15.8 dB"
+      ]
+    },
+    "reference": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "r_frame_rate": "16/1",
+          "duration": "5.000000",
+          "nb_read_frames": "80"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "duration": "5.000000",
+          "nb_read_frames": "216"
+        }
+      ],
+      "file_sha256": "cffeaadd93c9b480304eeed30de4e1e7ac3879cc33e7e15d9f7702923ed655a0",
+      "video_decoded": {
+        "sha256": "74961f65210978b481cd1930d78e6465d2b408dc11c36be4611e1fabdd9d4e35",
+        "bytes": 97689600
+      },
+      "audio_decoded": {
+        "sha256": "18946429a510efefb01d030eaeadd961212140470be3b898add10e52222f607f",
+        "bytes": 960000
+      },
+      "audio_levels": [
+        "[Parsed_volumedetect_0 @ 0x6000001e0b00] mean_volume: -36.5 dB",
+        "[Parsed_volumedetect_0 @ 0x6000001e0b00] max_volume: -15.8 dB"
+      ]
+    },
+    "media_shape_pass": true
+  },
+  "inputs": {
+    "memeswap_9c3a06fb.jpg": {
+      "bytes": 19091,
+      "sha256": "ef3f66f1bf3ffec3dfb6e5a73f13e1acdbebea8ee5fe7059c862a6a50067cca3"
+    },
+    "memeswap_306398c7.mp4": {
+      "bytes": 276250,
+      "sha256": "50a1ca96392a00e763262fac02a657da3087a85b2fcd560e925924e6f7cd2ca5"
+    }
+  },
+  "follower": {
+    "id": "ops-comfy-gpu-reuse-7708420741",
+    "status": "succeeded",
+    "cpus": 4,
+    "mem": 65536,
+    "gpus": 1,
+    "instances": [
+      {
+        "attempt": 0,
+        "task_id": "ops-comfy-gpu-reuse-7708420741-0",
+        "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "node_host": "100.122.27.11",
+        "state": "TASK_FINISHED",
+        "launched_at": "2026-10-11T01:39:43.068746895Z",
+        "terminal_at": "2026-10-11T01:39:44.503420142Z",
+        "principal": "team:medios-ops",
+        "data": [
+          {
+            "store": "results",
+            "container_path": "/models",
+            "mode": "RW",
+            "exclusive": false,
+            "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4"
+          }
+        ],
+        "exit_code": 0,
+        "result": "CUDA_REUSE_PASS\n",
+        "result_truncated": false
+      }
+    ]
+  },
+  "restoration": {
+    "url": "http://100.122.27.11:33007",
+    "instances": [
+      {
+        "id": "svc_meme-swap-comfy.instance-9c9d2fd8-5903-46cc-9a52-86b1adb6a695",
+        "app_id": "/svc/meme-swap-comfy",
+        "goal": "Running",
+        "condition": "Running",
+        "task_id": "svc_meme-swap-comfy.instance-9c9d2fd8-5903-46cc-9a52-86b1adb6a695.1",
+        "incarnation": 1,
+        "agent_info": {
+          "host": "100.122.27.11",
+          "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+          "attributes": {
+            "containerizer": "medios",
+            "gpu": "gb10",
+            "gpu_isolation": "module",
+            "images": "docker"
+          }
+        },
+        "ports": [
+          33007
+        ],
+        "created_at": "2026-10-11T01:39:46.259Z",
+        "updated_at": "2026-10-11T01:39:46.709Z",
+        "health": "Healthy",
+        "launched_app_version": "2026-10-10T20:07:33.906Z"
+      }
+    ],
+    "configuration_matches": true,
+    "uploads_sha256_match": true,
+    "reference_output_sha256_match": true
+  },
+  "first_failure": {
+    "prompt_id": "c727de3e-0fc6-4630-b10e-53d9b6d8eaed",
+    "reason": "Unsupported output reference type: loader input reference in ComfyUI history",
+    "fixed": "Retain an attempt-owned copy and include it in artifact verification"
+  }
+}

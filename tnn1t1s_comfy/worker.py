@@ -3,6 +3,7 @@ import fcntl
 import json
 import os
 from pathlib import Path
+import shutil
 import signal
 import socket
 import subprocess
@@ -26,6 +27,37 @@ def atomic_json(path, value):
         os.fsync(fd)
     finally:
         os.close(fd)
+
+
+def publish_outputs(outputs, root, output, temporary, input_root, attempt):
+    root, output, temporary, attempt = (Path(p).resolve() for p in (root, output, temporary, attempt))
+    artifacts = []
+    def rewrite(value):
+        if isinstance(value, dict):
+            if 'filename' in value and 'type' in value:
+                origin = {'output': output, 'temp': temporary,
+                          'input': Path(input_root).resolve()}.get(value['type'])
+                if origin is None:
+                    raise ValueError('Unsupported output reference type')
+                file = confined(origin, str(Path(value.get('subfolder', '')) / value['filename']))
+                if value['type'] == 'input':
+                    # Upstream loaders publish input references in history too.
+                    # Retain a private copy instead of exposing a mutable upload.
+                    retained = attempt / 'input' / file.relative_to(origin)
+                    retained.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(file, retained)
+                    file = retained
+                relative = file.relative_to(root)
+                with open(file, 'rb') as stream:
+                    os.fsync(stream.fileno())
+                artifacts.append({'path': str(relative), 'bytes': file.stat().st_size, 'sha256': digest(file)})
+                value.update(type='output', subfolder=str(relative.parent), filename=relative.name)
+            else:
+                for v in value.values(): rewrite(v)
+        elif isinstance(value, list):
+            for v in value: rewrite(v)
+    rewrite(outputs)
+    return artifacts
 
 
 def execute():
@@ -88,24 +120,7 @@ def execute():
                 time.sleep(.25)
             else:
                 raise TimeoutError('Render timed out')
-            artifacts = []
-            def rewrite(value):
-                if isinstance(value, dict):
-                    if 'filename' in value and 'type' in value:
-                        origin = {'output': output, 'temp': temporary}.get(value['type'])
-                        if origin is None:
-                            raise ValueError('Unsupported output reference type')
-                        file = confined(origin, str(Path(value.get('subfolder', '')) / value['filename']))
-                        relative = file.relative_to(root)
-                        with open(file, 'rb') as stream:
-                            os.fsync(stream.fileno())
-                        artifacts.append({'path': str(relative), 'bytes': file.stat().st_size, 'sha256': digest(file)})
-                        value.update(type='output', subfolder=str(relative.parent), filename=relative.name)
-                    else:
-                        for v in value.values(): rewrite(v)
-                elif isinstance(value, list):
-                    for v in value: rewrite(v)
-            rewrite(result['outputs'])
+            artifacts = publish_outputs(result['outputs'], root, output, temporary, config['input_root'], attempt)
             manifest = {'job_id': payload['job_id'], 'prompt_id': payload['prompt_id'],
                         'outputs': result['outputs'], 'artifacts': artifacts}
             path = attempt / 'manifest.json'

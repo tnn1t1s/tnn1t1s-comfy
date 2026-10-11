@@ -137,3 +137,40 @@ rollouts. Isolated test bookkeeping was cleared only after checking the sole
 replacement was healthy on the requested version. The production Comfy service
 was not modified. Full GPU acceptance needs a coordinated memory handoff from
 that service before a realistically sized finite worker can fit.
+
+
+## Full GPU acceptance — 2026-10-11
+
+Passed on the isolated gateway using the application-owned Wan profile and the
+same pinned ARM64 image/model cache as the accepted service:
+
+- Prompt `8a7258d7-0d88-49ad-b497-718828224caf`: 848x480, 80 frames,
+  16 fps, two sampling passes, seed 1. Gateway wall time 385.35 seconds;
+  private ComfyUI execution log reports 374.02 seconds. Twelve live previews.
+- H.264 video and AAC audio are both 5.00 seconds. Decoded video **and audio**
+  hashes match the earlier accepted reference exactly. Three frames were also
+  inspected. No weight download messages appeared in the worker log.
+- Prompt `20f4ba90-1bbe-466e-8fe0-5385064b7ec6` was cancelled after its first
+  sampling step. Confirmed terminal cancellation followed in 2.57 seconds.
+  The worker/private ComfyUI processes disappeared, and CPU/memory/GPU/store
+  accounting returned to its pre-run baseline after success and cancellation.
+- A new task requesting the same 4 CPUs, 65536 MiB and one GPU seat then executed
+  a CUDA tensor operation and returned `CUDA_REUSE_PASS`.
+
+Evidence: `evidence/gpu-acceptance.json`; repeatable operator probes and the
+Ansible capacity-window recipe are under `deploy/acceptance/`. Application
+workflow/model selection remains outside the core package.
+
+The real graph exposed input references in ComfyUI loader history. The old
+publisher rejected them after a completed render. The fix retains an
+attempt-owned input copy and validates it with the other published artifacts;
+regression tests cover retention and path confinement. This is post-render
+retention, not a claim of immutable pre-launch input staging. The video verifier
+selects the explicit save node so a loader's source clip cannot masquerade as
+the rendered result.
+
+The legacy service was restored healthy at its original endpoint with identical
+runtime configuration. Its uploads and prior output were restored and hash
+checked. Its normal in-memory history resets on restart; user-directory backups
+were retained without overwriting a live database. The new gateway's history
+remains journaled. No production-client migration is claimed by this acceptance.

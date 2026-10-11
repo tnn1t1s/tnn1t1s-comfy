@@ -1,0 +1,119 @@
+{
+  "gateway_app": {
+    "id": "/svc/tnn1t1s-comfy-gateway-test",
+    "container": {
+      "type": "MEDIOS_DOCKER",
+      "image": "localhost:15000/meme-swap-comfy@sha256:bafd5e87f8d46d33f99a947a5408ae70f864fc9aa2b69372983be62d7a4c81df",
+      "data": [
+        {
+          "store": "results",
+          "container_path": "/models",
+          "mode": "RW"
+        }
+      ]
+    },
+    "constraints": [
+      [
+        "gpu",
+        "CLUSTER",
+        "gb10"
+      ],
+      [
+        "containerizer",
+        "CLUSTER",
+        "medios"
+      ],
+      [
+        "hostname",
+        "CLUSTER",
+        "100.122.27.11"
+      ]
+    ],
+    "cpus": 1,
+    "mem": 4096,
+    "gpus": 0,
+    "port_definitions": [
+      {
+        "name": "http"
+      }
+    ],
+    "env": {
+      "HOME": "/tmp",
+      "ACCEPTANCE_RESTART": "6874512e-1435-4c2d-889c-222f1b26a2f4",
+      "MODEL_ROOT": "/models/meme-swap"
+    },
+    "health_checks": [
+      {
+        "protocol": "HTTP",
+        "path": "/cue/status",
+        "port_index": 0,
+        "interval_seconds": 15,
+        "timeout_seconds": 5,
+        "grace_period_seconds": 300,
+        "max_consecutive_failures": 3
+      }
+    ],
+    "labels": {
+      "app": "tnn1t1s-comfy",
+      "purpose": "isolated-acceptance"
+    },
+    "submitter": "team:medios-ops",
+    "instances": 1,
+    "networks": [
+      {
+        "mode": "HOST"
+      }
+    ],
+    "restart_strategy": {
+      "minimum_health_capacity": 0,
+      "maximum_over_capacity": 0
+    }
+  },
+  "gateway_config": {
+    "cue_url": "http://100.125.226.53:12321",
+    "submitter": "team:medios-ops",
+    "comfy_dir": "/opt/ComfyUI",
+    "journal": "/models/tnn1t1s-comfy/acceptance-v1/journal.sqlite",
+    "args": [
+      "--disable-assets"
+    ],
+    "worker_config": {
+      "comfy_dir": "/opt/ComfyUI",
+      "output_root": "/models/tnn1t1s-comfy/acceptance-v1/output",
+      "input_root": "/models/tnn1t1s-comfy/acceptance-v1/input",
+      "timeout": 1500,
+      "args": [
+        "--disable-assets",
+        "--preview-method",
+        "latent2rgb"
+      ]
+    },
+    "worker_spec": {
+      "image": "localhost:15000/meme-swap-comfy@sha256:bafd5e87f8d46d33f99a947a5408ae70f864fc9aa2b69372983be62d7a4c81df",
+      "cpus": 4,
+      "mem": 65536,
+      "gpus": 1,
+      "max_runtime_seconds": 1800,
+      "placement": {
+        "node_attributes": {
+          "gpu": "gb10",
+          "containerizer": "medios"
+        }
+      },
+      "data": [
+        {
+          "store": "results",
+          "container_path": "/models",
+          "mode": "RW"
+        }
+      ],
+      "env": {
+        "HOME": "/tmp",
+        "MODEL_ROOT": "/models/meme-swap",
+        "PORT0": "0"
+      }
+    }
+  },
+  "gateway_prepare": "sed '/^exec /,$d' /opt/start.sh > /tmp/comfy-prepare.sh && . /tmp/comfy-prepare.sh",
+  "worker_prepare": "sed '/^exec /,$d' /opt/start.sh > /tmp/comfy-prepare.sh && . /tmp/comfy-prepare.sh"
+}
