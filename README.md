@@ -4,14 +4,21 @@ ComfyUI with finite rendering through Cue. Keep the familiar UI; acquire compute
 for a render and release it when the task finishes. Pinned upstream ComfyUI is
 the runtime; this repository owns the integration and its operational tools.
 
-**Current state:** working diagnostics and Cue job controls, plus verified
-integration experiments. The production UI-to-Cue adapter is not complete.
-The existing Fennel ComfyUI service still renders locally and retains resources.
-Do not install the experimental adapter over that service.
+**Current state:** the gateway persists prompt/job mappings, runs finite Cue
+workers, verifies artifacts, and serves normal ComfyUI APIs with live browser
+progress/previews. CPU restart/reconnect/cancellation and full GPU video
+acceptance passed. The 80-frame GPU result matches the previously accepted
+video and audio exactly after decoding. Cancellation during sampling released
+resources, and a same-size CUDA follower succeeded.
+
+The isolated gateway is validated; the original service was restored after the
+capacity window. Production migration, immutable pre-launch input snapshots and
+general multi-user acceptance remain separate work.
 
 ## Use now
 
-Python 3.10+, no application dependencies:
+Python 3.10+ for the CLI, with no added dependencies. The gateway/worker use
+the pinned ComfyUI runtime and its aiohttp installation:
 
 ```sh
 python3 -m venv .venv
@@ -51,7 +58,8 @@ There is no Medios client, broker subscription, SSH, or built-in fleet address.
   inputs and output evaluation. `meme_swap` is the first consumer.
 - Fleet configuration: service URLs, image registries, stores and placement.
 
-See [integration roadmap](docs/INTEGRATION.md) for evidence and acceptance gates.
+See [integration roadmap](docs/INTEGRATION.md) for evidence and acceptance gates,
+and [optional deployment](deploy/README.md) for the Fennel recipe.
 The wrapper must not own a pool of idle GPU workers. Image/model disk caches
 may survive task exit without retaining a rendering process.
 

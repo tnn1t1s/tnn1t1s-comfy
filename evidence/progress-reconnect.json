@@ -1,0 +1,246 @@
+{
+  "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+  "client_id": "e6b086996b3b4e53aa5ab62e31fad0ca",
+  "events": [
+    {
+      "type": "status",
+      "data": {
+        "status": {
+          "exec_info": {
+            "queue_remaining": 0
+          }
+        },
+        "sid": "e6b086996b3b4e53aa5ab62e31fad0ca"
+      }
+    },
+    {
+      "type": "status",
+      "data": {
+        "status": {
+          "exec_info": {
+            "queue_remaining": 1
+          }
+        }
+      }
+    },
+    {
+      "type": "status",
+      "data": {
+        "status": {
+          "exec_info": {
+            "queue_remaining": 1
+          }
+        }
+      }
+    },
+    {
+      "type": "execution_start",
+      "data": {
+        "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3"
+      }
+    },
+    {
+      "type": "status",
+      "data": {
+        "status": {
+          "exec_info": {
+            "queue_remaining": 1
+          }
+        }
+      }
+    },
+    {
+      "type": "execution_cached",
+      "data": {
+        "nodes": [],
+        "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+        "timestamp": 1791680739448
+      }
+    },
+    {
+      "type": "executing",
+      "data": {
+        "node": "2",
+        "display_node": "2",
+        "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3"
+      }
+    },
+    {
+      "type": "progress",
+      "data": {
+        "value": 2,
+        "max": 50,
+        "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+        "node": "2"
+      }
+    },
+    {
+      "type": "progress_state",
+      "data": {
+        "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+        "nodes": {
+          "1": {
+            "value": 1.0,
+            "max": 1.0,
+            "state": "finished",
+            "node_id": "1",
+            "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+            "display_node_id": "1",
+            "parent_node_id": null,
+            "real_node_id": "1"
+          },
+          "2": {
+            "value": 2,
+            "max": 50,
+            "state": "running",
+            "node_id": "2",
+            "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+            "display_node_id": "2",
+            "parent_node_id": null,
+            "real_node_id": "2"
+          }
+        }
+      }
+    },
+    {
+      "type": "status",
+      "data": {
+        "status": {
+          "exec_info": {
+            "queue_remaining": 1
+          }
+        },
+        "sid": "e6b086996b3b4e53aa5ab62e31fad0ca"
+      }
+    },
+    {
+      "type": "execution_cached",
+      "data": {
+        "nodes": [],
+        "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+        "timestamp": 1791680739448
+      }
+    },
+    {
+      "type": "executing",
+      "data": {
+        "node": "2",
+        "display_node": "2",
+        "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3"
+      }
+    },
+    {
+      "type": "progress",
+      "data": {
+        "value": 5,
+        "max": 50,
+        "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+        "node": "2"
+      }
+    },
+    {
+      "type": "progress_state",
+      "data": {
+        "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+        "nodes": {
+          "1": {
+            "value": 1.0,
+            "max": 1.0,
+            "state": "finished",
+            "node_id": "1",
+            "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+            "display_node_id": "1",
+            "parent_node_id": null,
+            "real_node_id": "1"
+          },
+          "2": {
+            "value": 5,
+            "max": 50,
+            "state": "running",
+            "node_id": "2",
+            "prompt_id": "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+            "display_node_id": "2",
+            "parent_node_id": null,
+            "real_node_id": "2"
+          }
+        }
+      }
+    }
+  ],
+  "previews": [
+    {
+      "bytes": 820,
+      "sha256": "f1d53a29e5d98cc345918faee9c407ba6365fd406d15cafc828b11ce31b5092f"
+    },
+    {
+      "bytes": 820,
+      "sha256": "f1d53a29e5d98cc345918faee9c407ba6365fd406d15cafc828b11ce31b5092f"
+    }
+  ],
+  "reconnect_after_events": 9,
+  "reconnect_pass": true,
+  "history": {
+    "prompt": [
+      2,
+      "d8970c07-4e6d-434a-a280-cb6b5cb10ba3",
+      {
+        "1": {
+          "class_type": "EmptyImage",
+          "inputs": {
+            "width": 32,
+            "height": 32,
+            "batch_size": 1,
+            "color": 0
+          }
+        },
+        "2": {
+          "class_type": "CueRelayProbe",
+          "inputs": {
+            "image": [
+              "1",
+              0
+            ]
+          }
+        },
+        "3": {
+          "class_type": "SaveImage",
+          "inputs": {
+            "images": [
+              "2",
+              0
+            ],
+            "filename_prefix": "relay-acceptance"
+          }
+        }
+      },
+      {
+        "client_id": "e6b086996b3b4e53aa5ab62e31fad0ca",
+        "create_time": 1791680733374
+      },
+      [
+        "3"
+      ]
+    ],
+    "outputs": {
+      "3": {
+        "images": [
+          {
+            "filename": "relay-acceptance_00001_.png",
+            "subfolder": "comfy-d8970c07-4e6d-434a-a280-cb6b5cb10ba3/bf2e24aba6b34349bbebf6dad45df861/output",
+            "type": "output",
+            "metadata": {
+              "kind": "image",
+              "width": 32,
+              "height": 32
+            }
+          }
+        ]
+      }
+    },
+    "status": {
+      "status_str": "success",
+      "completed": true,
+      "messages": []
+    }
+  }
+}

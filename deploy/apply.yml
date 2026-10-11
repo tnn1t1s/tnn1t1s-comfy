@@ -1,0 +1,75 @@
+---
+- name: Apply isolated ComfyUI gateway
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    desired: "{{ lookup('file', spec_file) | from_json }}"
+  tasks:
+    - name: Require explicit target, caller and immutable runtime
+      ansible.builtin.assert:
+        that:
+          - desired.id == expected_app
+          - desired.gpus == 0
+          - desired.instances == 1
+          - "'@sha256:' in desired.container.image"
+          - desired.submitter | length > 0
+    - name: Wait for any earlier deployment of this application
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/deployments"
+        return_content: true
+      register: deployments
+      until: deployments.json.deployments | selectattr('app_id', 'equalto', expected_app) | list | length == 0
+      retries: 40
+      delay: 2
+      check_mode: false
+    - name: Read application
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/apps{{ desired.id }}"
+        status_code: [200, 404]
+        return_content: true
+      register: existing
+      check_mode: false
+    - name: Detect changes to declared fields
+      ansible.builtin.set_fact:
+        changed_fields: []
+    - name: Compare desired fields
+      ansible.builtin.set_fact:
+        changed_fields: "{{ changed_fields + [item.key] }}"
+      loop: "{{ desired | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      when: >-
+        existing.status == 404 or
+        (item.key == 'instances' and
+         (existing.json.instances | selectattr('goal', 'equalto', 'Running') | list | length) != item.value) or
+        (item.key != 'instances' and existing.json.get(item.key, 0 if item.key == 'gpus' else none) != item.value)
+    - name: Apply desired specification
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/apps{{ '' if existing.status == 404 else desired.id }}"
+        method: "{{ 'POST' if existing.status == 404 else 'PUT' }}"
+        body_format: json
+        body: "{{ desired }}"
+        status_code: [200, 201]
+      when: changed_fields | length > 0 and not ansible_check_mode
+      changed_when: true
+    - name: Wait for readiness
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/apps{{ desired.id }}"
+        return_content: true
+      register: observed
+      until: >-
+        observed.json.instances | selectattr('condition', 'equalto', 'Running') |
+        selectattr('health', 'defined') | selectattr('health', 'equalto', 'Healthy') | list | length == 1
+      retries: 45
+      delay: 3
+      when: not ansible_check_mode
+    - name: Wait for deployment completion
+      ansible.builtin.uri:
+        url: "{{ fennel_url }}/v2/deployments"
+        return_content: true
+      register: deployments
+      until: deployments.json.deployments | selectattr('app_id', 'equalto', expected_app) | list | length == 0
+      retries: 40
+      delay: 2
+      when: not ansible_check_mode

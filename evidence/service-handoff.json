@@ -1,0 +1,40 @@
+{
+  "meme-swap-comfy": {
+    "version": "2026-10-10T20:07:33.906Z",
+    "resources": {
+      "cpus": 4,
+      "mem": 65536,
+      "gpus": 1
+    },
+    "instances": [
+      {
+        "id": "svc_meme-swap-comfy.instance-acad0a40-225c-49a9-a2bf-1ee5f9d8eb39",
+        "condition": "Running",
+        "health": "Healthy",
+        "incarnation": 2,
+        "ports": [
+          33007
+        ]
+      }
+    ]
+  },
+  "tnn1t1s-comfy-gateway-test": {
+    "version": "2026-10-11T00:43:38.218Z",
+    "resources": {
+      "cpus": 0.5,
+      "mem": 2048,
+      "gpus": 0
+    },
+    "instances": [
+      {
+        "id": "svc_tnn1t1s-comfy-gateway-test.instance-4cb82b50-e132-4d72-afd0-5ead33af5335",
+        "condition": "Running",
+        "health": "Healthy",
+        "incarnation": 1,
+        "ports": [
+          33008
+        ]
+      }
+    ]
+  }
+}
