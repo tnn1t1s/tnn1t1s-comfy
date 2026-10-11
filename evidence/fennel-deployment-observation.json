@@ -1,0 +1,59 @@
+{
+  "app_version": "2026-10-11T00:40:43.643Z",
+  "instances": [
+    {
+      "id": "svc_tnn1t1s-comfy-gateway-test.instance-326ad23a-fe4e-436a-9223-ca3c6253f7c8",
+      "app_id": "/svc/tnn1t1s-comfy-gateway-test",
+      "goal": "Running",
+      "condition": "Running",
+      "task_id": "svc_tnn1t1s-comfy-gateway-test.instance-326ad23a-fe4e-436a-9223-ca3c6253f7c8.3",
+      "incarnation": 3,
+      "agent_info": {
+        "host": "100.122.27.11",
+        "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "attributes": {
+          "containerizer": "medios",
+          "gpu": "gb10",
+          "gpu_isolation": "module",
+          "images": "docker"
+        }
+      },
+      "ports": [
+        33008
+      ],
+      "created_at": "2026-10-11T00:38:09.580Z",
+      "updated_at": "2026-10-11T00:40:44.437Z",
+      "last_terminal_task": {
+        "id": "svc_tnn1t1s-comfy-gateway-test.instance-326ad23a-fe4e-436a-9223-ca3c6253f7c8.2",
+        "app_id": "/svc/tnn1t1s-comfy-gateway-test",
+        "instance_id": "svc_tnn1t1s-comfy-gateway-test.instance-326ad23a-fe4e-436a-9223-ca3c6253f7c8",
+        "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "container_id": "b650e65e-553f-4252-bccd-3021dda2f66c",
+        "condition": "Killed",
+        "staged_at": "2026-10-11T00:39:24.556Z",
+        "started_at": "2026-10-11T00:39:25.154Z",
+        "finished_at": "2026-10-11T00:40:43.833Z",
+        "status_message": "Command terminated with signal Terminated",
+        "status_source": "SOURCE_EXECUTOR"
+      },
+      "health": "Healthy",
+      "launched_app_version": "2026-10-11T00:40:43.643Z"
+    }
+  ],
+  "deployments": {
+    "deployments": [
+      {
+        "id": "svc_tnn1t1s-comfy-gateway-test.deploy-1392898e6669",
+        "app_id": "/svc/tnn1t1s-comfy-gateway-test",
+        "from_version": "2026-10-11T00:39:24.159Z",
+        "to_version": "2026-10-11T00:40:43.643Z",
+        "strategy": {
+          "minimum_health_capacity": 0,
+          "maximum_over_capacity": 0
+        },
+        "status": "Running",
+        "started_at": "2026-10-11T00:40:43.648Z"
+      }
+    ]
+  }
+}

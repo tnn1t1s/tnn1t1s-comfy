@@ -1,0 +1,127 @@
+{
+  "restart": {
+    "prompt_id": "dacad19f-8bc1-4ce0-8fa9-bc2ef300bd14",
+    "cue_job_id": "comfy-dacad19f-8bc1-4ce0-8fa9-bc2ef300bd14",
+    "instances": [
+      {
+        "attempt": 0,
+        "task_id": "comfy-dacad19f-8bc1-4ce0-8fa9-bc2ef300bd14-0",
+        "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "node_host": "100.122.27.11",
+        "state": "TASK_FINISHED",
+        "launched_at": "2026-10-11T00:44:49.818724238Z",
+        "terminal_at": "2026-10-11T00:45:15.594100207Z",
+        "principal": "team:medios-ops",
+        "data": [
+          {
+            "store": "results",
+            "container_path": "/models",
+            "mode": "RW",
+            "exclusive": false,
+            "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4"
+          }
+        ],
+        "exit_code": 0,
+        "result": "{\"manifest\": \"comfy-dacad19f-8bc1-4ce0-8fa9-bc2ef300bd14/b87ab4740d334e398194fd50d091d77f/manifest.json\", \"sha256\": \"d591c608b1323c0075403828d3d578b2e13ecd8c9da0f630afaeff4b27338011\"}\n",
+        "result_truncated": false
+      }
+    ],
+    "history_status": {
+      "status_str": "success",
+      "completed": true,
+      "messages": []
+    }
+  },
+  "legacy": {
+    "prompt_id": "f48262fd-084e-4825-af5c-48139fd8888f",
+    "response": {
+      "cancel_requested": true
+    },
+    "terminal": "cancelled",
+    "instances": [
+      {
+        "attempt": 0,
+        "task_id": "comfy-f48262fd-084e-4825-af5c-48139fd8888f-0",
+        "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "node_host": "100.122.27.11",
+        "state": "TASK_KILLED",
+        "launched_at": "2026-10-11T00:45:17.568824418Z",
+        "terminal_at": "2026-10-11T00:45:18.912684804Z",
+        "principal": "team:medios-ops",
+        "data": [
+          {
+            "store": "results",
+            "container_path": "/models",
+            "mode": "RW",
+            "exclusive": false,
+            "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4"
+          }
+        ],
+        "reason": "killed: cancelled by user",
+        "reason_code": "killed_cancelled",
+        "mea_culpa": false,
+        "result": "",
+        "result_truncated": false
+      }
+    ],
+    "history_status": {
+      "status_str": "error",
+      "completed": false,
+      "messages": [
+        [
+          "execution_interrupted",
+          {
+            "prompt_id": "f48262fd-084e-4825-af5c-48139fd8888f",
+            "exception_message": "cancelled"
+          }
+        ]
+      ]
+    }
+  },
+  "job": {
+    "prompt_id": "7b5788b1-cc53-4de3-bcd6-278a6785b947",
+    "response": {
+      "cancelled": true
+    },
+    "terminal": "cancelled",
+    "instances": [
+      {
+        "attempt": 0,
+        "task_id": "comfy-7b5788b1-cc53-4de3-bcd6-278a6785b947-0",
+        "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+        "node_host": "100.122.27.11",
+        "state": "TASK_KILLED",
+        "launched_at": "2026-10-11T00:45:20.318729696Z",
+        "terminal_at": "2026-10-11T00:45:21.632714961Z",
+        "principal": "team:medios-ops",
+        "data": [
+          {
+            "store": "results",
+            "container_path": "/models",
+            "mode": "RW",
+            "exclusive": false,
+            "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4"
+          }
+        ],
+        "reason": "killed: cancelled by user",
+        "reason_code": "killed_cancelled",
+        "mea_culpa": false,
+        "result": "",
+        "result_truncated": false
+      }
+    ],
+    "history_status": {
+      "status_str": "error",
+      "completed": false,
+      "messages": [
+        [
+          "execution_interrupted",
+          {
+            "prompt_id": "7b5788b1-cc53-4de3-bcd6-278a6785b947",
+            "exception_message": "cancelled"
+          }
+        ]
+      ]
+    }
+  }
+}

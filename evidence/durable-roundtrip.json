@@ -1,0 +1,92 @@
+{
+  "prompt_id": "0b21af2a-7dca-4e87-a9c2-cb4d162db8db",
+  "history": {
+    "prompt": [
+      0,
+      "0b21af2a-7dca-4e87-a9c2-cb4d162db8db",
+      {
+        "1": {
+          "class_type": "EmptyImage",
+          "inputs": {
+            "width": 16,
+            "height": 16,
+            "batch_size": 1,
+            "color": 65280
+          }
+        },
+        "2": {
+          "class_type": "SaveImage",
+          "inputs": {
+            "images": [
+              "1",
+              0
+            ],
+            "filename_prefix": "acceptance"
+          }
+        }
+      },
+      {
+        "create_time": 1791679134517
+      },
+      [
+        "2"
+      ]
+    ],
+    "outputs": {
+      "2": {
+        "images": [
+          {
+            "filename": "acceptance_00001_.png",
+            "subfolder": "comfy-0b21af2a-7dca-4e87-a9c2-cb4d162db8db/dc0be1b630404144a669807c0dedb0ff/output",
+            "type": "output",
+            "metadata": {
+              "kind": "image",
+              "width": 16,
+              "height": 16
+            }
+          }
+        ]
+      }
+    },
+    "status": {
+      "status_str": "success",
+      "completed": true,
+      "messages": []
+    }
+  },
+  "png_bytes": 311,
+  "png_sha256": "c4044dca42bc6cac6eacfcf97be3ee1fe3692769e970a074eca042439d1d8f53",
+  "adapter": [
+    {
+      "prompt_id": "0b21af2a-7dca-4e87-a9c2-cb4d162db8db",
+      "job_id": "comfy-0b21af2a-7dca-4e87-a9c2-cb4d162db8db",
+      "state": "succeeded",
+      "cancel_requested": false,
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 0,
+          "task_id": "comfy-0b21af2a-7dca-4e87-a9c2-cb4d162db8db-0",
+          "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4",
+          "node_host": "100.122.27.11",
+          "state": "TASK_FINISHED",
+          "launched_at": "2026-10-11T00:38:55.318939073Z",
+          "terminal_at": "2026-10-11T00:39:01.0983853Z",
+          "principal": "team:medios-ops",
+          "data": [
+            {
+              "store": "results",
+              "container_path": "/models",
+              "mode": "RW",
+              "exclusive": false,
+              "node_id": "a5436cb9-5e84-4249-a960-99b7adc7bdc4-S4"
+            }
+          ],
+          "exit_code": 0,
+          "result": "{\"manifest\": \"comfy-0b21af2a-7dca-4e87-a9c2-cb4d162db8db/dc0be1b630404144a669807c0dedb0ff/manifest.json\", \"sha256\": \"4c598fcdbb940558c5cb382cebb38dc78bc3bdcd4344035c077fe99e9225468c\"}\n",
+          "result_truncated": false
+        }
+      ]
+    }
+  ]
+}
