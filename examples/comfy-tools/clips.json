@@ -1,0 +1,219 @@
+{
+  "the-smiths": {
+    "url": "https://www.youtube.com/watch?v=1hyEnE1SwQA",
+    "start": 0,
+    "duration": 24,
+    "faces_left_to_right": [
+      "male",
+      "female"
+    ],
+    "people": {
+      "male": {
+        "who": "the man on the left",
+        "points": [
+          [
+            0.22,
+            0.3
+          ],
+          [
+            0.22,
+            0.65
+          ]
+        ],
+        "reference_changes": [
+          {
+            "at": 13.8,
+            "frame": 15.25,
+            "what": "He pulls his headphones down from his head to his neck.",
+            "note": "The headphones stay exactly where they are in image 1: around his neck, not on his head.",
+            "prompt": "The character is moving naturally in the scene. A pair of black over-ear headphones hangs around his neck, resting on his collar. Nothing is on his head or over his ears."
+          }
+        ]
+      },
+      "female": {
+        "who": "the woman on the right",
+        "points": [
+          [
+            0.8,
+            0.45
+          ],
+          [
+            0.8,
+            0.78
+          ]
+        ]
+      }
+    },
+    "note": "Single locked two-shot from 0 to about 30 s; the two people never cross. Her profile turn at 5-8 s is the hardest stretch for the swapper.",
+    "artist": "the Smiths",
+    "captions": {
+      "size": [
+        640,
+        352
+      ],
+      "font_px": 23.7,
+      "text_rgb": [
+        247,
+        186,
+        22
+      ],
+      "old_text_hsv": [
+        [
+          16,
+          110,
+          120
+        ],
+        [
+          33,
+          255,
+          255
+        ]
+      ],
+      "strip": [
+        0.82,
+        0.98
+      ],
+      "lines": [
+        {
+          "start": 5.37,
+          "end": 8.37,
+          "box": [
+            282,
+            301,
+            382,
+            321
+          ],
+          "text": "{Artist}?"
+        },
+        {
+          "start": 11.53,
+          "end": 13.63,
+          "box": [
+            224,
+            308,
+            417,
+            327
+          ],
+          "text": "I love {artist}."
+        },
+        {
+          "start": 13.67,
+          "end": 14.37,
+          "box": [
+            282,
+            312,
+            358,
+            335
+          ],
+          "text": "Sorry?"
+        },
+        {
+          "start": 14.67,
+          "end": 17.67,
+          "box": [
+            200,
+            304,
+            439,
+            321
+          ],
+          "text": "I said i love {artist}."
+        },
+        {
+          "start": 20.87,
+          "end": 22.37,
+          "box": [
+            166,
+            306,
+            473,
+            325
+          ],
+          "text": "You have good taste in music."
+        },
+        {
+          "start": 22.43,
+          "end": 23.07,
+          "box": [
+            210,
+            302,
+            430,
+            320
+          ],
+          "text": "You like {artist}?"
+        },
+        {
+          "start": 23.1,
+          "end": 23.7,
+          "box": [
+            284,
+            292,
+            355,
+            313
+          ],
+          "text": "Yeah."
+        }
+      ]
+    },
+    "speech_edits": [
+      {
+        "who": "female",
+        "context": [
+          [
+            11.5,
+            16.8
+          ]
+        ],
+        "text": "I love {artist}. Sorry? I said I love {artist}.",
+        "spans": [
+          [
+            12.26,
+            13.06
+          ],
+          [
+            15.42,
+            16.28
+          ]
+        ]
+      },
+      {
+        "who": "female",
+        "context": [
+          [
+            11.5,
+            16.8
+          ],
+          [
+            5.3,
+            6.7
+          ]
+        ],
+        "text": "I love {spoken}. Sorry? I said I love {spoken}. {Artist}?",
+        "spans": [
+          [
+            5.5,
+            6.5
+          ]
+        ]
+      },
+      {
+        "who": "male",
+        "context": [
+          [
+            13.5,
+            14.2
+          ],
+          [
+            20.4,
+            24.0
+          ]
+        ],
+        "text": "Sorry? You've good taste in music. You like {artist}? Yeah.",
+        "spans": [
+          [
+            22.52,
+            23.14
+          ]
+        ]
+      }
+    ]
+  }
+}

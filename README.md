@@ -2,8 +2,8 @@
 
 Tools and worked examples for running ComfyUI workflows on a ComfyUI server you
 already operate. The `tnn1t1s_comfy` package holds HTTP clients for ComfyUI and
-Cue and a small command, `tnn1t1s-comfy`, for checking a server and managing Cue
-jobs. [`examples/`](examples/) holds case studies, each with its own node pack,
+Cue and a small command, `tnn1t1s-comfy`, for checking a server, managing Cue
+jobs and running a workflow graph. [`examples/`](examples/) holds case studies, each with its own node pack,
 workflow script, inputs and write-up.
 
 ## Install
@@ -40,6 +40,22 @@ unknown.
 command exits with code 1, because the job may still be using its resources. If
 the job finished before the cancel arrived, the command prints the real result.
 
+`run` submits an API-format graph (ComfyUI "Export (API)") with local files:
+
+```sh
+.venv/bin/tnn1t1s-comfy run workflow.json \
+  --input character=face.png --input load_video=clip.mp4 \
+  --set positive.text='a person dancing' --out results/
+```
+
+Each `--input` uploads the file under a name derived from its SHA256 and binds
+it to that node. `LoadImage`, `LoadImageMask` and `LoadVideo` have known file
+fields. Any other loader needs `NODE.FIELD=PATH`. A missing node, a missing
+field or a linked input is rejected before anything is uploaded. `run.json` in
+the output directory records the prompt ID before waiting, then the input and
+output hashes. Only `output`-type files are downloaded. A timeout exits nonzero
+and does not claim the prompt stopped.
+
 For a ComfyUI server that runs as a Fennel service, set `COMFY_URL` to the
 service's load-balancer address and service port. That address stays the same
 when Fennel moves or restarts the service.
@@ -48,6 +64,10 @@ when Fennel moves or restarts the service.
 
 [Record swap](examples/record-swap/) replaces an album sleeve in a three-shot
 film clip with planar tracking and compositing nodes.
+
+[Comfy tools](examples/comfy-tools/) and the `bin/swap` command replace people
+in a catalogued clip with Wan 2.2 Animate, and can change the clip's song and
+the artist its dialogue names.
 
 ## Test
 
