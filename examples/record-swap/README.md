@@ -1,6 +1,6 @@
 # Record swap: replacing an album sleeve in a 500 Days of Summer shot
 
-This report describes how a 3.3 s clip from *(500) Days of Summer* was edited so that the record Tom holds in the record-shop scene is Lifetime's *Hello Bastards* (Jade Tree, 1995) instead of Ringo Starr's *Stop and Smell the Roses* (1981). The edit replaces both faces of the sleeve wherever they appear, re-grades the new art to the footage, adds the footage's grain, and puts a Belle and Sebastian session recording under the picture. The result is [`results/record-swap.mp4`](results/record-swap.mp4).
+This report describes how a 3.3 s clip from *(500) Days of Summer* was edited so that the record Tom holds in the record-shop scene is Lifetime's *Hello Bastards* (Jade Tree, 1995) instead of Ringo Starr's *Stop and Smell the Roses* (1981). The edit replaces both faces of the sleeve wherever they appear, re-grades the new art to the footage, and adds the footage's grain. The sound is the film's own. The result is [`results/record-swap.mp4`](results/record-swap.mp4).
 
 All image work ran in ComfyUI on an NVIDIA GB10. ComfyUI has no node that tracks a flat object or warps an image into a quadrilateral, so the work added a custom node pack, ComfyUI-PlanarTrack, which is in this directory.
 
@@ -27,11 +27,11 @@ uv run --with numpy --with opencv-python-headless python workflow/measure_s2.py 
   footage/record-swap-src.mp4 art/ringo-back-1981.jpg
 COMFY_URL=http://your-comfy-host:8188 python3 workflow/run_swap.py \
   footage/record-swap-src.mp4 art/hello-bastards-front.jpg art/hello-bastards-back.jpg out/
-ffmpeg -framerate 24000/1001 -pattern_type glob -i 'out/frame_*.png' -i results/record-swap.mp4 \
-  -map 0:v -map 1:a -c:v libx264 -crf 16 -preset slow -pix_fmt yuv420p -c:a copy -movflags +faststart out/record-swap.mp4
+ffmpeg -framerate 24000/1001 -pattern_type glob -i 'out/frame_*.png' -i footage/record-swap-src.mp4 \
+  -map 0:v -map 1:a -c:v libx264 -crf 16 -preset slow -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart out/record-swap.mp4
 ```
 
-`measure_s2.py` rewrites `workflow/quads_s2.json` with the same corners that are checked in, and it needs ffmpeg on the path. The ffmpeg step takes the finished clip's audio track (section 9). The composite test runs without ComfyUI:
+`measure_s2.py` rewrites `workflow/quads_s2.json` with the same corners that are checked in, and it needs ffmpeg on the path. The ffmpeg step takes the sound from the source clip (section 9). The composite test runs without ComfyUI:
 
 ```sh
 cd ComfyUI-PlanarTrack && uv run --with numpy --with opencv-python-headless python -m unittest test_composite.py
@@ -143,21 +143,11 @@ Shot 1 shows the new back on frames 0 to 8 and the new front from frame 9 (`BACK
 
 ## 9. Audio
 
-The film's own audio under this exchange is dialogue and the shop's background music. It was replaced outright with a quiet instrumental passage, as if from the shop's stereo.
-
-The passage is from Belle and Sebastian's "We Rule the School", from their 1996 BBC session (YouTube upload `Jmk3ej_c3J4`). whisper-cli, with the `base.en` model, transcribed the recording in 3.3 s windows; it heard only music before the vocal enters at about 6 s. The clip uses 1.0 to 4.3 s of the recording, filtered to sound like a small speaker in a room:
-
-```
-highpass=f=110, lowpass=f=7000,
-aecho=0.8:0.6:45|90:0.25|0.15, volume=-8dB,
-afade=t=in:d=0.15, afade=t=out:st=2.9:d=0.4
-```
-
-It plays at about −35 dB mean, close to the −38 dB of the film's background audio in this scene. It is encoded as AAC at 192 kb/s.
+The clip keeps the film's sound for these 79 frames, cut with the picture in section 1, so it stays in sync without adjustment. A speech-to-text pass (whisper-cli, `base.en`) hears only music in it.
 
 ## 10. Encode
 
-The 79 frames were encoded with libx264 at CRF 16, preset slow, yuv420p, 24000/1001 fps, with `+faststart`, and the AAC track was copied in without re-encoding. The file is 3.295 s.
+The 79 frames were encoded with libx264 at CRF 16, preset slow, yuv420p, 24000/1001 fps, with `+faststart`, and the source clip's sound was encoded as AAC at 192 kb/s. The file is 3.295 s.
 
 The clip was published as the landscape 1280×544 file.
 
@@ -176,7 +166,6 @@ The clip was published as the landscape 1280×544 file.
 | `grain_match` | 1.0 | parameter | Matches the measured grain, about 0.007 per channel |
 | Shot 2 hair position | 0.475 of sleeve width | observation | Measured on the 1981 Bellaphon back scan |
 | Shot 2 smoothing | 5 frames | heuristic | Halfway-crossing measurements jitter by a few px on a defocused edge |
-| Audio level | −8 dB gain, about −35 dB mean | parameter | Near the film's own background level of −38 dB |
 
 ## 12. Limits and open items
 
