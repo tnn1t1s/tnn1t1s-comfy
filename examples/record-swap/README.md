@@ -1,5 +1,7 @@
 # Record swap: replacing an album sleeve in a 500 Days of Summer shot
 
+[![The finished clip, looping without sound; click for the mp4 with sound](results/record-swap.gif)](results/record-swap.mp4)
+
 This report describes how a 3.3 s clip from *(500) Days of Summer* was edited so that the record Tom holds in the record-shop scene is Lifetime's *Hello Bastards* (Jade Tree, 1995) instead of Ringo Starr's *Stop and Smell the Roses* (1981). The edit replaces both faces of the sleeve wherever they appear, re-grades the new art to the footage, and adds the footage's grain. The sound is the film's own. The result is [`results/record-swap.mp4`](results/record-swap.mp4).
 
 All image work ran in ComfyUI on an NVIDIA GB10. ComfyUI has no node that tracks a flat object or warps an image into a quadrilateral, so the work added a custom node pack, ComfyUI-PlanarTrack, which is in this directory.
@@ -16,7 +18,7 @@ All image work ran in ComfyUI on an NVIDIA GB10. ComfyUI has no node that tracks
 | `workflow/measure_s2.py`, `workflow/quads_s2.json` | The shot 2 corner measurement and its output |
 | `art/` | The original sleeve (front and back) and the replacement (front and back) |
 | `footage/record-swap-src.mp4` | The trimmed 79-frame source clip with its original audio |
-| `results/` | The finished clip and a before/after frame for each shot |
+| `results/` | The finished clip, a silent looping GIF of it, and a before/after frame for each shot |
 
 ## Reproduce
 
