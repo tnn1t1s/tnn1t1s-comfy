@@ -118,7 +118,7 @@ flowchart TB
   comfyapp --- store
 ```
 
-This example talks to a ComfyUI service that stays up between runs. The rest of this repository wraps ComfyUI differently: its gateway keeps the ComfyUI UI and API up, and each render runs as a finite Cue job that exits once its outputs are published. The workflow script calls only ComfyUI's HTTP API, so it runs unchanged against either setup, and against any other ComfyUI server that has these node packs.
+The ComfyUI service stays up between runs, and Fennel scales it down to free the GPU when it is not needed. The workflow script calls only ComfyUI's HTTP API, so it runs unchanged against any ComfyUI server that has these node packs.
 
 ## 1. Source footage
 
