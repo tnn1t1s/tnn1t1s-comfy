@@ -5,10 +5,71 @@
 
 This report describes how a 3.3 s clip from *(500) Days of Summer* was edited so that the record Tom holds in the record-shop scene is Lifetime's *Hello Bastards* (Jade Tree, 1995) instead of Ringo Starr's *Stop and Smell the Roses* (1981). The edit replaces both faces of the sleeve wherever they appear, re-grades the new art to the footage, and adds the footage's grain. The sound is the film's own. The result is [`results/record-swap.mp4`](results/record-swap.mp4).
 
-All image work ran in ComfyUI on an NVIDIA GB10. ComfyUI has no node that tracks a flat object or warps an image into a quadrilateral, so the work added a custom node pack, ComfyUI-PlanarTrack, which is in this directory.
+The main contribution of this work is [ComfyUI-PlanarTrack](#comfyui-planartrack), a ComfyUI node pack in this directory that tracks a flat object through a shot and composites a new image onto it, behind the hands that hold it. The rest of the edit uses existing ComfyUI nodes, with SAM2 for segmentation.
 
 <p align="center"><img src="results/shot1-before-after.jpg" alt="Shot 1, source above and result below"></p>
 <p align="center"><em>Figure 2. Shot 1, frame 22. Top: the source, with Tom holding up Ringo Starr's <i>Stop and Smell the Roses</i>. Bottom: the result, with the <i>Hello Bastards</i> front tracked onto the sleeve and matched to the film's grade and grain. His fingers stay in front of the new cover.</em></p>
+
+## ComfyUI-PlanarTrack
+
+ComfyUI-PlanarTrack is a ComfyUI node pack for planar replacement. It follows a flat object, such as an album sleeve, a sign or a phone screen, through a shot, and puts a new image onto that object in every frame. Hands and anything else that passes in front of the object stay in front of the new image. Compositors usually do this job in a dedicated planar tracker such as Mocha. ComfyUI's built-in nodes, and the node packs this example uses alongside it, can segment an object but cannot find its corners or warp an image onto it, so this pack adds those steps.
+
+The pack is one Python file, [`ComfyUI-PlanarTrack/__init__.py`](ComfyUI-PlanarTrack/__init__.py), and needs only OpenCV and NumPy beyond what ComfyUI already installs.
+
+### How the nodes connect
+
+The nodes pass corners to each other as a JSON string with one entry per frame. Each entry holds four `[x, y]` points in frame pixels, ordered top-left, top-right, bottom-right, bottom-left. A corner may lie outside the frame, which is how a sleeve that runs off the edge of the picture keeps its true shape. Any node that writes this format can feed the compositor, and a hand-measured file works too: shot 2 of this example uses one.
+
+```mermaid
+flowchart LR
+  frames[/"Video frames"/] --> sam["SAM2: object mask<br/>and occluder mask"]
+  art[/"The object's own print"/] --> track
+  frames --> track["ArtworkTrack"]
+  sam --> track
+  track -- "corners JSON" --> comp["CompositeIntoQuads"]
+  newart[/"Replacement image"/] --> comp
+  frames --> comp
+  sam --> comp
+  comp --> out[/"Composited frames"/]
+```
+
+<p align="center"><em>Figure 3. The pack's path through a shot. SAM2 masks the object and the hands in front of it; ArtworkTrack finds the object's four corners in every frame; CompositeIntoQuads warps the replacement image into those corners and blends it in behind the hands.</em></p>
+
+### The nodes
+
+| Node | Takes | Gives | Used in this example |
+|---|---|---|---|
+| ArtworkTrack | Frames, the object's original print, object and occluder masks, optional hand-set corners for hard frames | Corners JSON and a per-frame log of how each frame was solved | Shots 1 and 3 |
+| CompositeIntoQuads | Frames, the replacement image, corners JSON, object and occluder masks, an optional second image for the first frames | Composited frames and the blend mask | All three shots |
+| PlanarTrack | Frames, four corners set by hand on one frame, optional object mask | Corners JSON and a log | No |
+| MaskToQuads | Object masks | Corners JSON | No |
+
+ArtworkTrack is the tracker to use when you have a clean image of the object's print. It aligns that print to every frame, so all four corners come from the printed surface, including corners that a hand or the frame edge hides. On this footage it replaced MaskToQuads, which fits corners to the visible outline of the mask and therefore has to guess at hidden ones: its bottom-right corner in shot 1 sat about 45 px from where the print puts it. Section 4 describes ArtworkTrack's three steps of anchor, propagation and acceptance.
+
+PlanarTrack covers objects whose print you do not have. You set the four corners on one frame, and it follows the texture inside them with SIFT matches, falling back to intensity alignment and then to the mask's outline when motion blur leaves too few matches. MaskToQuads is the cheapest option and suits objects whose corners stay visible.
+
+CompositeIntoQuads does the work that makes the replacement sit in the footage rather than on top of it:
+
+- It keeps occluders in front. Pixels under the occluder mask always keep the footage, so fingers stay over the new cover.
+- It confines the new art to the object. Inside the quad, art replaces only pixels within the convex hull of the object mask, so a corner that overshoots past a hand does not paint the background.
+- It matches the footage's look. It blurs the art to the shot's focus, moves its colour statistics part of the way to those of the pixels it replaces, and adds grain measured from the footage.
+- It can switch images partway through a shot. A second image covers the first frames, which is how shot 1 shows the sleeve's back before Tom turns it to the front.
+
+Section 6 gives each step with its parameters.
+
+### Using it on other footage
+
+Copy `ComfyUI-PlanarTrack/` into ComfyUI's `custom_nodes` directory, make sure OpenCV is in ComfyUI's Python environment, and restart ComfyUI: it loads node packs only at start, so any change to the pack also needs a restart. The nodes appear under the `planar_track` category.
+
+A shot needs these inputs:
+
+- Masks for the object and for whatever passes in front of it. This example makes them with ComfyUI-segment-anything-2, prompted with a few click points on one frame.
+- For ArtworkTrack, an image of the object's print, upright and cropped to its four corners. For PlanarTrack, four corners on one frame instead.
+- Hand-set corners for frames where the object is edge-on or smeared by motion, if the track log reports those frames as held rather than aligned.
+
+The pack assumes the object is flat and rigid. A bent sleeve or a curved screen will not fit a four-corner warp. When an object is so far out of focus that no printed detail survives, neither tracker can lock on, and its corners have to be measured from the frame, as section 5 does for shot 2.
+
+`ComfyUI-PlanarTrack/test_composite.py` checks the compositor's blend-mask rules on synthetic frames without ComfyUI or torch.
 
 ## Files
 
@@ -35,7 +96,7 @@ ffmpeg -framerate 24000/1001 -pattern_type glob -i 'out/frame_*.png' -i footage/
   -map 0:v -map 1:a -c:v libx264 -crf 16 -preset slow -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart out/record-swap.mp4
 ```
 
-`measure_s2.py` rewrites `workflow/quads_s2.json` with the same corners that are checked in, and it needs ffmpeg on the path. The ffmpeg step takes the sound from the source clip (section 9). The composite test runs without ComfyUI:
+`measure_s2.py` rewrites `workflow/quads_s2.json` with the same corners that are checked in, and it needs ffmpeg on the path. The ffmpeg step takes the sound from the source clip (section 8). The composite test runs without ComfyUI:
 
 ```sh
 cd ComfyUI-PlanarTrack && uv run --with numpy --with opencv-python-headless python -m unittest test_composite.py
@@ -83,7 +144,7 @@ flowchart TB
   save -.-> enc[/"ffmpeg: H.264 plus source audio"/]
 ```
 
-<p align="center"><em>Figure 3. The ComfyUI graph that <code>run_swap.py</code> queues. Plain boxes are ComfyUI nodes and slanted boxes are files or tools outside ComfyUI. The three shots run side by side and are joined back in clip order.</em></p>
+<p align="center"><em>Figure 4. The ComfyUI graph that <code>run_swap.py</code> queues. Plain boxes are ComfyUI nodes and slanted boxes are files or tools outside ComfyUI. The three shots run side by side and are joined back in clip order.</em></p>
 
 ## Where it runs
 
@@ -132,7 +193,7 @@ flowchart LR
   comfyapp --- store
 ```
 
-<p align="center"><em>Figure 4. Where each part runs: the scripts on the workstation, the schedulers and the load balancer on the Medios controller, and ComfyUI on the Medios nodes: the GB10 that rendered this example, and the RunPod nodes.</em></p>
+<p align="center"><em>Figure 5. Where each part runs: the scripts on the workstation, the schedulers and the load balancer on the Medios controller, and ComfyUI on the Medios nodes: the GB10 that rendered this example, and the RunPod nodes.</em></p>
 
 The ComfyUI service stays up between runs, and Fennel scales it down to free the GPU when it is not needed. The workflow script calls only ComfyUI's HTTP API, so it runs unchanged against any ComfyUI server that has these node packs.
 
@@ -166,17 +227,7 @@ The trimmed clip has three shots. Frame numbers below count from the start of th
 
 The Ringo back is a white field with Ringo standing in the centre, his hair reaching almost to the top edge. The *Hello Bastards* back has a black band with the tracklist across the top, then a photograph of the Manhattan skyline from New Jersey.
 
-## 3. The node pack
-
-ComfyUI-PlanarTrack holds four nodes. All corner data passes between them as JSON: one entry per frame, four `[x, y]` points in the order top-left, top-right, bottom-right, bottom-left, in frame pixels. A corner can lie outside the frame.
-
-- **ArtworkTrack** finds the sleeve's corners by aligning the sleeve's known print to every frame (section 5).
-- **CompositeIntoQuads** warps the new art into each frame's corners and blends it in (section 7).
-- **MaskToQuads** fits corners to a segmentation mask's outline, and **PlanarTrack** follows texture from corners set on one frame. Neither appears in the final workflow.
-
-ComfyUI loads the pack from `custom_nodes/ComfyUI-PlanarTrack/` at start, so a change to the pack needs a ComfyUI restart.
-
-## 4. Segmentation
+## 3. Segmentation
 
 SAM2 (`sam2.1_hiera_large`, bf16, video mode) produced two mask tracks in each of shots 1 and 3: the sleeve, and the hands holding it. Each track starts from positive and negative click points on one frame and propagates through the shot.
 
@@ -189,9 +240,9 @@ In shot 1 the sleeve faces the camera only at the end, so the shot is reversed b
 | Shot 3 sleeve | 6 on the cover | 4 on the hands |
 | Shot 3 hands | 5 on both hands | 3 on the cover |
 
-Shot 2 has no masks (section 6).
+Shot 2 has no masks (section 5).
 
-## 5. Corner tracking in shots 1 and 3
+## 4. Corner tracking in shots 1 and 3
 
 The bins and Tom's hand hide the sleeve's bottom edge and bottom-right corner through most of shot 1, and the frame edge cuts off the bottom of the sleeve in shot 3. A corner fit to the visible outline (MaskToQuads, which extends the visible sides to their intersections) has to guess at those corners, and on this footage its bottom-right corner sat about 45 px from where the print puts it. ArtworkTrack replaced it because the printed art constrains all four corners whether or not they are visible.
 
@@ -203,7 +254,7 @@ ArtworkTrack works in three steps.
 
 Shot 1 needed hand-set quads on frames 0 to 9, where the sleeve is edge-on or smeared by motion; they are in `keys_s1.json`. ECC held every frame of shot 1 except frame 8 at correlation 0.81 to 0.98, and frame 8, the most blurred, uses its hand-set quad. Shot 3 held at about 0.97 on every frame.
 
-## 6. Shot 2: the out-of-focus back
+## 5. Shot 2: the out-of-focus back
 
 In Zooey's close-up the sleeve sits in the foreground, back side towards the camera, so far out of focus that no printed detail survives except the dark mass of Ringo's hair against the white field. SIFT has nothing to match and ECC has no texture to lock onto. The corners were therefore measured from the frame by `workflow/measure_s2.py`, in four steps:
 
@@ -217,13 +268,13 @@ The script decodes the clip with ffmpeg. OpenCV's own decoder converts the colou
 The sleeve is square, so the remaining corners follow from the top-left corner, the edge direction and the width.
 
 <p align="center"><img src="results/shot2-before-after.jpg" alt="Shot 2, source above and result below"></p>
-<p align="center"><em>Figure 5. Shot 2, frame 44. Top: the source, with the white back of the Ringo sleeve out of focus in the lower right corner. Bottom: the result, with the dark tracklist band of the <i>Hello Bastards</i> back in its place, blurred to the same depth of field.</em></p>
+<p align="center"><em>Figure 6. Shot 2, frame 44. Top: the source, with the white back of the Ringo sleeve out of focus in the lower right corner. Bottom: the result, with the dark tracklist band of the <i>Hello Bastards</i> back in its place, blurred to the same depth of field.</em></p>
 
 Most of the quad lies outside the frame to the right and below, and only the top-left part of the back is visible, which is where the *Hello Bastards* tracklist band falls.
 
 The defocus was estimated from the top edge, which rises from 10% to 90% of its contrast over about 24 px. For a Gaussian blur that rise is 2.56σ, so the composite uses a blur of σ = 9 px. CompositeIntoQuads ran on frames 34 to 53 with no masks and no hand masks: nothing passes in front of the sleeve in that region, and the composite fills the quad as measured. Grade match was 0.5 and grain match 1.0, the same as the other shots, with a 3 px feather and no grow.
 
-## 7. Compositing
+## 6. Compositing
 
 CompositeIntoQuads does the following per frame:
 
@@ -236,24 +287,24 @@ CompositeIntoQuads does the following per frame:
 
 Shot 1 shows the new back on frames 0 to 8 and the new front from frame 9 (`BACK_UNTIL = 9`), passed to the node as `lead_image` and `lead_frames`. Frame 9 is the most motion-blurred frame of the swing, so the change of face lands inside the blur. In frames 0 to 6 the sleeve is nearly edge-on and the back shows only as a thin strip.
 
-## 8. Runs
+## 7. Runs
 
 `run_swap.py` uploads its inputs to ComfyUI, queues one workflow over the HTTP API, polls `/history` until the prompt completes, and downloads the PNG frames, masks and corner JSON. The workflow covers all three shots and joins them in clip order. It ran in 41 s on the GB10, and its 79 frames match the frames of `results/record-swap.mp4` before encoding, pixel for pixel.
 
 <p align="center"><img src="results/shot3-before-after.jpg" alt="Shot 3, source above and result below"></p>
-<p align="center"><em>Figure 6. Shot 3, frame 62. Top: the source, with Tom holding the Ringo front up to Zooey. Bottom: the result, with the <i>Hello Bastards</i> front under both of his hands, cut off by the bottom of the frame as the original is.</em></p>
+<p align="center"><em>Figure 7. Shot 3, frame 62. Top: the source, with Tom holding the Ringo front up to Zooey. Bottom: the result, with the <i>Hello Bastards</i> front under both of his hands, cut off by the bottom of the frame as the original is.</em></p>
 
-## 9. Audio
+## 8. Audio
 
 The clip keeps the film's sound for these 79 frames, cut with the picture in section 1, so it stays in sync without adjustment. A speech-to-text pass (whisper-cli, `base.en`) hears only music in it.
 
-## 10. Encode
+## 9. Encode
 
 The 79 frames were encoded with libx264 at CRF 16, preset slow, yuv420p, 24000/1001 fps, with `+faststart`, and the source clip's sound was encoded as AAC at 192 kb/s. The file is 3.295 s.
 
 The clip was published as the landscape 1280×544 file.
 
-## 11. Parameters
+## 10. Parameters
 
 | Name | Value | Kind | Reason |
 |---|---|---|---|
@@ -269,7 +320,7 @@ The clip was published as the landscape 1280×544 file.
 | Shot 2 hair position | 0.475 of sleeve width | observation | Measured on the 1981 Bellaphon back scan |
 | Shot 2 smoothing | 5 frames | heuristic | Halfway-crossing measurements jitter by a few px on a defocused edge |
 
-## 12. Limits and open items
+## 11. Limits and open items
 
 - **Shot 2 geometry is measured, not tracked.** The corners come from a scene-specific script that assumes a vertical left edge, a square sleeve and the Bellaphon pressing's layout of the back. Two frames (34 and 53) were checked against the source at full size, plus one frame of the final encode.
 - **Grade match in shot 2 pulls the new back towards white.** Grade matching targets the original pixels under the quad, which in shot 2 are mostly Ringo's white back. The *Hello Bastards* back is mostly black and sky, so at 0.5 its mean moves halfway towards a bright surface. At this defocus the result reads as a pale, out-of-focus sleeve, which is what the shot shows.
