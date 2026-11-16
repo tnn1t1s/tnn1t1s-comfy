@@ -81,8 +81,8 @@ Live results:
 
 The recovery/cancellation fixture deliberately delayed worker startup by 20 s.
 This proves recovery/cancellation while the backend task is running, not an
-interrupt during a full GPU sampling pass. Evidence: `durable-roundtrip.json`
-and `restart-cancel.json` under evidence/.
+interrupt during a full GPU sampling pass. `tests/live/roundtrip.py` and
+`tests/live/recovery.py` repeat these runs and write their records under `local/`.
 
 Live testing found and fixed a race: Cue may report success before its stdout
 result capture arrives. The gateway now waits up to 60 seconds for the pointer,
@@ -90,8 +90,7 @@ persisting that wait across restart, before validating output. Earlier failed
 probe histories remain in the test journal as evidence; they were not relabeled.
 
 Fennel's deployment record also remained Running after the sole instance was
-healthy on the desired version. Captured in `fennel-deployment-observation.json`
-and reported to Fennel engineering. The test-only restart fixture can cancel
+healthy on the desired version. This was reported to Fennel engineering. The test-only restart fixture can cancel
 that completed migration's bookkeeping after checking arrival, then scale the
 isolated app down/up. Ordinary apply waits and reports a stuck rollout.
 
@@ -118,10 +117,10 @@ Completion is separate: the gateway emits final node outputs only after Cue is
 terminal and the manifest/files pass verification. An upstream progress or
 completion message cannot mark the job successful.
 
-Evidence in `evidence/`:
-- `progress-reconnect.json`: real finite CPU worker, progress and binary preview,
+Run records are written under `local/` (see `deploy/README.md`):
+- `tests/live/progress.py`: real finite CPU worker, progress and binary preview,
   socket disconnect/reconnect, then successful verified publication.
-- `browser-progress.json`, `browser-progress.png`, `browser-output.png`: Chrome
+- `tests/live/browser.cjs`: Chrome
   using the pinned frontend, visible node progress and decoded preview, followed
   by a decoded 32x32 final image on SaveImage. The fixture produces previews
   without requiring a model or GPU; this does not certify Wan previews.
@@ -157,8 +156,9 @@ same pinned ARM64 image/model cache as the accepted service:
 - A new task requesting the same 4 CPUs, 65536 MiB and one GPU seat then executed
   a CUDA tensor operation and returned `CUDA_REUSE_PASS`.
 
-Evidence: `evidence/gpu-acceptance.json`; repeatable operator probes and the
-Ansible capacity-window recipe are under `deploy/acceptance/`. Application
+`deploy/acceptance/gpu.py` repeats this run and writes its report to the
+directory given by `--evidence-dir`; it and the Ansible capacity-window recipe
+are under `deploy/acceptance/`. Application
 workflow/model selection remains outside the core package.
 
 The real graph exposed input references in ComfyUI loader history. The old
