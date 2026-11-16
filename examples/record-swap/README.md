@@ -87,7 +87,7 @@ flowchart TB
 
 ## Where it runs
 
-The ComfyUI server runs as a long-running service on Medios, a self-hosted GPU cluster. The Medios controller offers each Medios node's CPUs, memory and GPUs to two schedulers: Fennel runs long-running services and Cue runs finite batch jobs. Clients reach a Fennel service through a load balancer on a fixed service port, so the address stays the same when the service moves to another instance. Fennel services and Cue jobs share the GPU node, an NVIDIA GB10.
+The ComfyUI server runs as a long-running service on Medios, a self-hosted GPU cluster. The Medios controller offers each Medios node's CPUs, memory and GPUs to two schedulers: Fennel runs long-running services and Cue runs finite batch jobs. Clients reach a Fennel service through a load balancer on a fixed service port, so the address stays the same when the service moves to another instance. Fennel services and Cue jobs share each Medios node. Besides the NVIDIA GB10, the cluster takes in rented RunPod GPU machines as Medios nodes; ComfyUI runs on them as Cue jobs on an A100 and as a Fennel service on an RTX PRO 6000. This example's renders ran on the GB10.
 
 ```mermaid
 flowchart LR
@@ -116,15 +116,23 @@ flowchart LR
     cuejob["Cue jobs"]
   end
 
+  subgraph runpod ["Medios nodes on RunPod"]
+    direction TB
+    a100["A100 80 GB<br/>ComfyUI as Cue jobs"]
+    rtx["RTX PRO 6000<br/>ComfyUI Fennel service"]
+  end
+
   runswap -- "HTTP" --> lb --> comfy
   mgr -- "offers" --> fennel
   mgr -- "offers" --> cue
   fennel -- "runs" --> comfyapp
   cue -- "runs" --> cuejob
+  cue -- "runs" --> a100
+  fennel -- "runs" --> rtx
   comfyapp --- store
 ```
 
-<p align="center"><em>Figure 4. Where each part runs: the scripts on the workstation, the schedulers and the load balancer on the Medios controller, and the ComfyUI service on the Medios node.</em></p>
+<p align="center"><em>Figure 4. Where each part runs: the scripts on the workstation, the schedulers and the load balancer on the Medios controller, and ComfyUI on the Medios nodes: the GB10 that rendered this example, and the RunPod nodes.</em></p>
 
 The ComfyUI service stays up between runs, and Fennel scales it down to free the GPU when it is not needed. The workflow script calls only ComfyUI's HTTP API, so it runs unchanged against any ComfyUI server that has these node packs.
 
