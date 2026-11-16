@@ -39,64 +39,43 @@ cd ComfyUI-PlanarTrack && uv run --with numpy --with opencv-python-headless pyth
 
 ## Workflow graph
 
-`run_swap.py` queues one ComfyUI graph for the whole clip. Each box is a ComfyUI node, named by its class, and the slanted boxes are files or tools outside ComfyUI. Shots 1 and 3 run the same chain of segment, track and composite. Shot 1 reverses its frames first, because SAM2 is prompted on its last frame, where the cover faces the camera.
+`run_swap.py` queues one ComfyUI graph for the whole clip. Each box is a ComfyUI node, named by its class, and the slanted boxes are files or tools outside ComfyUI. Both SAM2 boxes stand for the same pair of nodes run twice, once for the sleeve and once for the hands, with one shared `sam2.1_hiera_large` model; ArtworkTrack and CompositeIntoQuads also take each frame range, which the graph leaves out. Shots 1 and 3 run the same chain of segment, track and composite. Shot 1 reverses its frames first, because SAM2 is prompted on its last frame, where the cover faces the camera.
 
 ```mermaid
-flowchart LR
+flowchart TB
   src[/"footage/record-swap-src.mp4"/] --> load["LoadVideo"] --> comp["GetVideoComponents"]
-  sam["DownloadAndLoadSAM2Model<br/>sam2.1_hiera_large, bf16"]
-  ringo["LoadImage<br/>Ringo front"]
-  front["LoadImage<br/>Hello Bastards front"]
-  back["LoadImage<br/>Hello Bastards back"]
 
   subgraph s1 ["Shot 1, frames 0-33"]
+    direction TB
     r1["GetImageRangeFromBatch"] --> rev["ReverseImageBatch"]
-    rev --> seg1["SAM2 sleeve mask"]
-    rev --> hand1["SAM2 hand mask"]
-    keys[/"keys_s1.json"/] --> at1["ArtworkTrack"]
-    r1 --> at1
+    rev --> seg1["SAM2: sleeve mask<br/>and hand mask"]
+    keys[/"keys_s1.json"/] --> at1["ArtworkTrack<br/>aligns the Ringo front art"]
     seg1 --> at1
-    hand1 --> at1
-    at1 -- "corners" --> c1["CompositeIntoQuads<br/>back on frames 0-8, front after"]
+    at1 -- "corners" --> c1["CompositeIntoQuads<br/>new back on frames 0-8,<br/>new front after"]
     seg1 --> c1
-    hand1 --> c1
   end
 
   subgraph s2 ["Shot 2, frames 34-53"]
-    r2["GetImageRangeFromBatch"] --> c2["CompositeIntoQuads<br/>blur sigma 9 px, no masks"]
-    q2[/"quads_s2.json"/] -- "corners" --> c2
+    direction TB
+    r2["GetImageRangeFromBatch"] --> c2["CompositeIntoQuads<br/>new back, blur sigma 9 px,<br/>no masks"]
+    q2[/"quads_s2.json<br/>from measure_s2.py"/] -- "corners" --> c2
   end
 
   subgraph s3 ["Shot 3, frames 54-78"]
-    r3["GetImageRangeFromBatch"] --> seg3["SAM2 sleeve mask"]
-    r3 --> hand3["SAM2 hand mask"]
-    r3 --> at3["ArtworkTrack"]
-    seg3 --> at3
-    hand3 --> at3
-    at3 -- "corners" --> c3["CompositeIntoQuads"]
+    direction TB
+    r3["GetImageRangeFromBatch"] --> seg3["SAM2: sleeve mask<br/>and hand mask"]
+    seg3 --> at3["ArtworkTrack<br/>aligns the Ringo front art"]
+    at3 -- "corners" --> c3["CompositeIntoQuads<br/>new front"]
     seg3 --> c3
-    hand3 --> c3
   end
 
   comp --> r1
   comp --> r2
   comp --> r3
-  sam --> seg1
-  sam --> hand1
-  sam --> seg3
-  sam --> hand3
-  ringo --> at1
-  ringo --> at3
-  front --> c1
-  back --> c1
-  back --> c2
-  front --> c3
-  measure[/"measure_s2.py"/] -.-> q2
-  c1 --> b1["ImageBatch"]
-  c2 --> b1
-  b1 --> b2["ImageBatch"]
-  c3 --> b2
-  b2 --> save["SaveImage<br/>79 PNG frames"]
+  c1 --> join["ImageBatch x2<br/>clip order"]
+  c2 --> join
+  c3 --> join
+  join --> save["SaveImage<br/>79 PNG frames"]
   save -.-> enc[/"ffmpeg: H.264 plus source audio"/]
 ```
 
