@@ -58,6 +58,11 @@ There is no Medios client, broker subscription, SSH, or built-in fleet address.
   inputs and output evaluation. `meme_swap` is the first consumer.
 - Fleet configuration: service URLs, image registries, stores and placement.
 
+[`examples/`](examples/) holds worked case studies, each with its own node pack,
+workflow script, inputs and write-up. [Record swap](examples/record-swap/)
+replaces an album sleeve in a three-shot film clip with planar tracking and
+compositing nodes.
+
 See [integration roadmap](docs/INTEGRATION.md) for evidence and acceptance gates,
 and [optional deployment](deploy/README.md) for the Fennel recipe.
 The wrapper must not own a pool of idle GPU workers. Image/model disk caches
