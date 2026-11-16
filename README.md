@@ -1,72 +1,53 @@
 # tnn1t1s-comfy
 
-ComfyUI with finite rendering through Cue. Keep the familiar UI; acquire compute
-for a render and release it when the task finishes. Pinned upstream ComfyUI is
-the runtime; this repository owns the integration and its operational tools.
+Tools and worked examples for running ComfyUI workflows on a ComfyUI server you
+already operate. The `tnn1t1s_comfy` package holds HTTP clients for ComfyUI and
+Cue and a small command, `tnn1t1s-comfy`, for checking a server and managing Cue
+jobs. [`examples/`](examples/) holds case studies, each with its own node pack,
+workflow script, inputs and write-up.
 
-**Current state:** the gateway persists prompt/job mappings, runs finite Cue
-workers, verifies artifacts, and serves normal ComfyUI APIs with live browser
-progress/previews. CPU restart/reconnect/cancellation and full GPU video
-acceptance passed. The 80-frame GPU result matches the previously accepted
-video and audio exactly after decoding. Cancellation during sampling released
-resources, and a same-size CUDA follower succeeded.
+## Install
 
-The isolated gateway is validated; the original service was restored after the
-capacity window. Production migration, immutable pre-launch input snapshots and
-general multi-user acceptance remain separate work.
-
-## Use now
-
-Python 3.10+ for the CLI, with no added dependencies. The gateway/worker use
-the pinned ComfyUI runtime and its aiohttp installation:
+Python 3.10 or later; the package has no dependencies outside the standard
+library.
 
 ```sh
 python3 -m venv .venv
 .venv/bin/pip install .
-export COMFY_URL='http://your-comfy-host:assigned-port'
-export CUE_URL='http://your-cue-host:port'
+```
+
+## Command
+
+```sh
+export COMFY_URL='http://your-comfy-host:8188'
+export CUE_URL='http://your-cue-host:12321'
 .venv/bin/tnn1t1s-comfy doctor --require-node SaveImage
 .venv/bin/tnn1t1s-comfy job YOUR_CUE_JOB_ID
 .venv/bin/tnn1t1s-comfy cancel YOUR_CUE_JOB_ID --submitter team:your-team --wait 60
 ```
 
-`doctor` reads readiness, queue counts and optional node catalogs. It does not
-submit work or claim that a responsive API proves CUDA or model readiness.
-`job` preserves Cue's waiting/failure explanation and attempt identity. When
-Cue has no waiting reason, it says so; it does not guess from cluster state.
-`cancel` sends the caller identity and waits for a terminal state. A timeout
-exits nonzero: the task may still be running. A completion race reports the
-actual result, not a fictitious cancellation.
+`doctor` checks that the ComfyUI server answers and reports how many prompts are
+running and waiting. With `--require-node` it also confirms that those node
+classes are installed. A server that answers has not yet shown that its models
+load or that a GPU render works, and the output says so.
 
-For a Fennel-hosted service, resolve its current healthy instance instead of
-copying a port from yesterday's logs:
+`job` prints a Cue job's state, its attempts and the reason Cue gives for it.
+When Cue gives no reason for a waiting job, the output says the reason is
+unknown.
 
-```sh
-export COMFY_URL="$(python3 deploy/fennel_url.py \
-  --fennel-url "$FENNEL_URL" --app /svc/your-comfy-app)"
-```
+`cancel` asks Cue to cancel the job on behalf of the named team and waits up to
+`--wait` seconds for it to stop. If it is still running at the timeout the
+command exits with code 1, because the job may still be using its resources. If
+the job finished before the cancel arrived, the command prints the real result.
 
-Discovery requires one Running/Healthy instance. Fennel is a deployment option,
-not an application dependency. The core calls only ComfyUI and Cue APIs.
-There is no Medios client, broker subscription, SSH, or built-in fleet address.
+For a ComfyUI server that runs as a Fennel service, set `COMFY_URL` to the
+service's load-balancer address and service port. That address stays the same
+when Fennel moves or restarts the service.
 
-## Ownership and next work
+## Examples
 
-- Here: Cue adapter, prompt/job mapping, worker lifecycle, UI progress/cancel,
-  durable artifact contract, diagnostics and optional deployment recipes.
-- Consumer repositories: workflows, model manifests, custom node selections,
-  inputs and output evaluation. `meme_swap` is the first consumer.
-- Fleet configuration: service URLs, image registries, stores and placement.
-
-[`examples/`](examples/) holds worked case studies, each with its own node pack,
-workflow script, inputs and write-up. [Record swap](examples/record-swap/)
-replaces an album sleeve in a three-shot film clip with planar tracking and
-compositing nodes.
-
-See [integration roadmap](docs/INTEGRATION.md) for evidence and acceptance gates,
-and [optional deployment](deploy/README.md) for the Fennel recipe.
-The wrapper must not own a pool of idle GPU workers. Image/model disk caches
-may survive task exit without retaining a rendering process.
+[Record swap](examples/record-swap/) replaces an album sleeve in a three-shot
+film clip with planar tracking and compositing nodes.
 
 ## Test
 

@@ -1,24 +1,20 @@
 # Working on tnn1t1s-comfy
 
-This is a ComfyUI integration whose execution backend is Cue. The application
-must not call a Medios controller/node API, subscribe as a framework, use SSH,
-or embed fleet addresses. Cue handles placement and execution. Keep Cue's
-opaque placement/store fields as deployment configuration, not broker logic.
+The `tnn1t1s_comfy` package talks to ComfyUI and Cue over their HTTP APIs and
+nothing else. It takes every service address as an explicit input (`COMFY_URL`,
+`CUE_URL` or a command-line flag) and never looks up hosts, calls a Medios
+controller or node API, or uses SSH. Resolving addresses belongs to whoever runs
+the tool.
 
-Fennel is an optional host for the UI/API service. Keep its deployment and
-discovery helpers under deploy/, outside the application runtime package.
-COMFY_URL and CUE_URL are explicit inputs. Resolve them in the deployment
-layer; no dependency on a particular cluster's endpoint utility in core code.
+Keep the package on the standard library. Workflows, custom node packs, model
+lists and inputs belong to the example or the project that uses them, under
+`examples/` or in that project's own repository.
 
-Use pinned upstream ComfyUI and extension points. Workflows, custom node packs,
-and model manifests belong to application profiles, not a hidden meme-swap
-assumption. Existing service deployment must not change during investigation.
+A ComfyUI server or GPU node used for testing is usually shared. Do not restart
+a service or stop another team's job to test code from this repository. Tests
+that call live services must be bounded in time and use unique Cue job IDs.
 
-No idle warm render workers. A finite Cue task owns each render attempt and
-exits after durable output publication. UI/API stays available independently.
-Cancellation requested is not termination confirmed. Cue infrastructure retries
-may occur with retries=0. Never claim exactly-once rendering.
+A cancel request accepted by Cue does not mean the job has stopped; wait for a
+terminal state before reporting it stopped.
 
-Run python3 -m unittest discover -s tests -v. Integration probes must be bounded,
-have unique job IDs, and record terminal outcomes. Never stop another team's
-render to test this package. Keep verified capabilities separate from milestones.
+Run `python3 -m unittest discover -s tests -v` before committing.

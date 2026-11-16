@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "tnn1t1s-comfy"
 version = "0.1.0"
-description = "ComfyUI operations and finite rendering through Cue"
+description = "Clients and command-line checks for a ComfyUI server and Cue jobs"
 requires-python = ">=3.10"
 dependencies = []
 
