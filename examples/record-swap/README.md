@@ -1,5 +1,7 @@
 # Record swap: replacing an album sleeve in a 500 Days of Summer shot
 
+[![The finished clip, looping without sound; click for the mp4 with sound](results/record-swap.gif)](results/record-swap.mp4)
+
 This report describes how a 3.3 s clip from *(500) Days of Summer* was edited so that the record Tom holds in the record-shop scene is Lifetime's *Hello Bastards* (Jade Tree, 1995) instead of Ringo Starr's *Stop and Smell the Roses* (1981). The edit replaces both faces of the sleeve wherever they appear, re-grades the new art to the footage, and adds the footage's grain. The sound is the film's own. The result is [`results/record-swap.mp4`](results/record-swap.mp4).
 
 All image work ran in ComfyUI on an NVIDIA GB10. ComfyUI has no node that tracks a flat object or warps an image into a quadrilateral, so the work added a custom node pack, ComfyUI-PlanarTrack, which is in this directory.
@@ -16,7 +18,7 @@ All image work ran in ComfyUI on an NVIDIA GB10. ComfyUI has no node that tracks
 | `workflow/measure_s2.py`, `workflow/quads_s2.json` | The shot 2 corner measurement and its output |
 | `art/` | The original sleeve (front and back) and the replacement (front and back) |
 | `footage/record-swap-src.mp4` | The trimmed 79-frame source clip with its original audio |
-| `results/` | The finished clip and a before/after frame for each shot |
+| `results/` | The finished clip, a silent looping GIF of it, and a before/after frame for each shot |
 
 ## Reproduce
 
@@ -36,6 +38,87 @@ ffmpeg -framerate 24000/1001 -pattern_type glob -i 'out/frame_*.png' -i footage/
 ```sh
 cd ComfyUI-PlanarTrack && uv run --with numpy --with opencv-python-headless python -m unittest test_composite.py
 ```
+
+## Workflow graph
+
+`run_swap.py` queues one ComfyUI graph for the whole clip. Each box is a ComfyUI node, named by its class, and the slanted boxes are files or tools outside ComfyUI. Both SAM2 boxes stand for the same pair of nodes run twice, once for the sleeve and once for the hands, with one shared `sam2.1_hiera_large` model; ArtworkTrack and CompositeIntoQuads also take each frame range, which the graph leaves out. Shots 1 and 3 run the same chain of segment, track and composite. Shot 1 reverses its frames first, because SAM2 is prompted on its last frame, where the cover faces the camera.
+
+```mermaid
+flowchart TB
+  src[/"footage/record-swap-src.mp4"/] --> load["LoadVideo"] --> comp["GetVideoComponents"]
+
+  subgraph s1 ["Shot 1, frames 0-33"]
+    direction TB
+    r1["GetImageRangeFromBatch"] --> rev["ReverseImageBatch"]
+    rev --> seg1["SAM2: sleeve mask<br/>and hand mask"]
+    keys[/"keys_s1.json"/] --> at1["ArtworkTrack<br/>aligns the Ringo front art"]
+    seg1 --> at1
+    at1 -- "corners" --> c1["CompositeIntoQuads<br/>new back on frames 0-8,<br/>new front after"]
+    seg1 --> c1
+  end
+
+  subgraph s2 ["Shot 2, frames 34-53"]
+    direction TB
+    r2["GetImageRangeFromBatch"] --> c2["CompositeIntoQuads<br/>new back, blur sigma 9 px,<br/>no masks"]
+    q2[/"quads_s2.json<br/>from measure_s2.py"/] -- "corners" --> c2
+  end
+
+  subgraph s3 ["Shot 3, frames 54-78"]
+    direction TB
+    r3["GetImageRangeFromBatch"] --> seg3["SAM2: sleeve mask<br/>and hand mask"]
+    seg3 --> at3["ArtworkTrack<br/>aligns the Ringo front art"]
+    at3 -- "corners" --> c3["CompositeIntoQuads<br/>new front"]
+    seg3 --> c3
+  end
+
+  comp --> r1
+  comp --> r2
+  comp --> r3
+  c1 --> join["ImageBatch x2<br/>clip order"]
+  c2 --> join
+  c3 --> join
+  join --> save["SaveImage<br/>79 PNG frames"]
+  save -.-> enc[/"ffmpeg: H.264 plus source audio"/]
+```
+
+## Where it runs
+
+The ComfyUI server runs as a long-running service on a self-hosted GPU cluster. A cluster manager offers each node's CPUs, memory and GPUs to two schedulers: Fennel runs long-running services and Cue runs finite batch jobs. Clients reach a Fennel service through a load balancer on a fixed service port, so the address stays the same when the service moves to another instance. Fennel services and Cue jobs share the GPU node, an NVIDIA GB10.
+
+```mermaid
+flowchart TB
+  subgraph client ["Workstation"]
+    runswap["run_swap.py<br/>builds the graph, uploads inputs,<br/>polls /history, downloads frames"]
+    measure["measure_s2.py<br/>shot 2 corners"]
+    ffmpeg["ffmpeg<br/>final encode"]
+  end
+
+  subgraph control ["Control host"]
+    mgr["Cluster manager<br/>resource offers"]
+    fennel["Fennel<br/>long-running services"]
+    cue["Cue<br/>finite batch jobs"]
+    lb["Fennel load balancer<br/>service port 8188"]
+  end
+
+  subgraph gpu ["GPU node: NVIDIA GB10"]
+    subgraph comfyapp ["Fennel service: ComfyUI container, 4 CPUs, 48 GB, GPU"]
+      comfy["ComfyUI HTTP API<br/>/upload/image, /prompt, /history, /view"]
+      nodes["custom_nodes<br/>ComfyUI-PlanarTrack<br/>ComfyUI-segment-anything-2<br/>ComfyUI-KJNodes"]
+      comfy --- nodes
+    end
+    store[("Shared results store, mounted at /models<br/>SAM2 weights, node overlay, start script")]
+    cuejob["Cue job containers<br/>for example the Reel render"]
+  end
+
+  runswap -- "HTTP" --> lb --> comfy
+  mgr -- "offers" --> fennel
+  mgr -- "offers" --> cue
+  fennel -- "places and restarts" --> comfyapp
+  cue -- "runs" --> cuejob
+  comfyapp --- store
+```
+
+The ComfyUI service stays up between runs, and Fennel scales it down to free the GPU when it is not needed. The workflow script calls only ComfyUI's HTTP API, so it runs unchanged against any ComfyUI server that has these node packs.
 
 ## 1. Source footage
 
