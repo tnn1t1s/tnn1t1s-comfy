@@ -1,6 +1,6 @@
 # Record swap: replacing an album sleeve in a 500 Days of Summer shot
 
-[![The finished clip, looping without sound; click for the mp4 with sound](results/record-swap.gif)](results/record-swap.mp4)
+<p align="center"><a href="results/record-swap.mp4"><img src="results/record-swap.gif" alt="The finished clip, looping without sound; click for the mp4 with sound"></a></p>
 
 This report describes how a 3.3 s clip from *(500) Days of Summer* was edited so that the record Tom holds in the record-shop scene is Lifetime's *Hello Bastards* (Jade Tree, 1995) instead of Ringo Starr's *Stop and Smell the Roses* (1981). The edit replaces both faces of the sleeve wherever they appear, re-grades the new art to the footage, and adds the footage's grain. The sound is the film's own. The result is [`results/record-swap.mp4`](results/record-swap.mp4).
 
