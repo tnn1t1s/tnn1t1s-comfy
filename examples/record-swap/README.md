@@ -1,12 +1,14 @@
 # Record swap: replacing an album sleeve in a 500 Days of Summer shot
 
-<p align="center"><a href="results/record-swap.mp4"><img src="results/record-swap.gif" alt="The finished clip, looping without sound; click for the mp4 with sound"></a></p>
+<p align="center"><a href="results/record-swap.mp4"><img src="results/record-swap.gif" alt="The finished clip, looping without sound"></a></p>
+<p align="center"><em>Figure 1. The finished 3.3 s clip, all three shots, looping without sound. Click it for the mp4 with the film's sound.</em></p>
 
 This report describes how a 3.3 s clip from *(500) Days of Summer* was edited so that the record Tom holds in the record-shop scene is Lifetime's *Hello Bastards* (Jade Tree, 1995) instead of Ringo Starr's *Stop and Smell the Roses* (1981). The edit replaces both faces of the sleeve wherever they appear, re-grades the new art to the footage, and adds the footage's grain. The sound is the film's own. The result is [`results/record-swap.mp4`](results/record-swap.mp4).
 
 All image work ran in ComfyUI on an NVIDIA GB10. ComfyUI has no node that tracks a flat object or warps an image into a quadrilateral, so the work added a custom node pack, ComfyUI-PlanarTrack, which is in this directory.
 
-![Shot 1, source above and result below](results/shot1-before-after.jpg)
+<p align="center"><img src="results/shot1-before-after.jpg" alt="Shot 1, source above and result below"></p>
+<p align="center"><em>Figure 2. Shot 1, frame 22. Top: the source, with Tom holding up Ringo Starr's <i>Stop and Smell the Roses</i>. Bottom: the result, with the <i>Hello Bastards</i> front tracked onto the sleeve and matched to the film's grade and grain. His fingers stay in front of the new cover.</em></p>
 
 ## Files
 
@@ -81,6 +83,8 @@ flowchart TB
   save -.-> enc[/"ffmpeg: H.264 plus source audio"/]
 ```
 
+<p align="center"><em>Figure 3. The ComfyUI graph that <code>run_swap.py</code> queues. Plain boxes are ComfyUI nodes and slanted boxes are files or tools outside ComfyUI. The three shots run side by side and are joined back in clip order.</em></p>
+
 ## Where it runs
 
 The ComfyUI server runs as a long-running service on a self-hosted GPU cluster. A cluster manager offers each node's CPUs, memory and GPUs to two schedulers: Fennel runs long-running services and Cue runs finite batch jobs. Clients reach a Fennel service through a load balancer on a fixed service port, so the address stays the same when the service moves to another instance. Fennel services and Cue jobs share the GPU node, an NVIDIA GB10.
@@ -117,6 +121,8 @@ flowchart TB
   cue -- "runs" --> cuejob
   comfyapp --- store
 ```
+
+<p align="center"><em>Figure 4. Where each part runs: the scripts on the workstation, the schedulers and the load balancer on the control host, and the ComfyUI service on the GPU node.</em></p>
 
 The ComfyUI service stays up between runs, and Fennel scales it down to free the GPU when it is not needed. The workflow script calls only ComfyUI's HTTP API, so it runs unchanged against any ComfyUI server that has these node packs.
 
@@ -200,8 +206,10 @@ The script decodes the clip with ffmpeg. OpenCV's own decoder converts the colou
 
 The sleeve is square, so the remaining corners follow from the top-left corner, the edge direction and the width.
 
-![Shot 2, source above and result below](results/shot2-before-after.jpg)
- Most of the quad lies outside the frame to the right and below, and only the top-left part of the back is visible, which is where the *Hello Bastards* tracklist band falls.
+<p align="center"><img src="results/shot2-before-after.jpg" alt="Shot 2, source above and result below"></p>
+<p align="center"><em>Figure 5. Shot 2, frame 44. Top: the source, with the white back of the Ringo sleeve out of focus in the lower right corner. Bottom: the result, with the dark tracklist band of the <i>Hello Bastards</i> back in its place, blurred to the same depth of field.</em></p>
+
+Most of the quad lies outside the frame to the right and below, and only the top-left part of the back is visible, which is where the *Hello Bastards* tracklist band falls.
 
 The defocus was estimated from the top edge, which rises from 10% to 90% of its contrast over about 24 px. For a Gaussian blur that rise is 2.56σ, so the composite uses a blur of σ = 9 px. CompositeIntoQuads ran on frames 34 to 53 with no masks and no hand masks: nothing passes in front of the sleeve in that region, and the composite fills the quad as measured. Grade match was 0.5 and grain match 1.0, the same as the other shots, with a 3 px feather and no grow.
 
@@ -222,7 +230,8 @@ Shot 1 shows the new back on frames 0 to 8 and the new front from frame 9 (`BACK
 
 `run_swap.py` uploads its inputs to ComfyUI, queues one workflow over the HTTP API, polls `/history` until the prompt completes, and downloads the PNG frames, masks and corner JSON. The workflow covers all three shots and joins them in clip order. It ran in 41 s on the GB10, and its 79 frames match the frames of `results/record-swap.mp4` before encoding, pixel for pixel.
 
-![Shot 3, source above and result below](results/shot3-before-after.jpg)
+<p align="center"><img src="results/shot3-before-after.jpg" alt="Shot 3, source above and result below"></p>
+<p align="center"><em>Figure 6. Shot 3, frame 62. Top: the source, with Tom holding the Ringo front up to Zooey. Bottom: the result, with the <i>Hello Bastards</i> front under both of his hands, cut off by the bottom of the frame as the original is.</em></p>
 
 ## 9. Audio
 
