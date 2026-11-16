@@ -1,4 +1,15 @@
-"""Explicit service URLs; discovery belongs to the deployment environment."""
+"""The ``tnn1t1s-comfy`` command.
+
+doctor   Check that a ComfyUI server answers, show its queue, and with
+         ``--require-node`` confirm that given node classes are installed.
+job      Print a Cue job's state and the reason Cue gives for it.
+cancel   Cancel a Cue job on behalf of a team and wait for it to stop.
+
+The ComfyUI address comes from ``--comfy-url`` or ``COMFY_URL`` and the Cue
+address from ``--cue-url`` or ``CUE_URL``; a command that needs one exits with
+an error when it is missing. Output is JSON on stdout. The exit code is 0 on
+success and 1 when a check fails, a call errors, or a cancel times out.
+"""
 import argparse
 import json
 import os
@@ -7,7 +18,7 @@ from .client import Cue, doctor, explain
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Inspect ComfyUI and manage finite Cue jobs')
+    parser = argparse.ArgumentParser(description='Check a ComfyUI server and manage Cue jobs')
     commands = parser.add_subparsers(dest='command', required=True)
     check = commands.add_parser('doctor', help='Read-only readiness and queue checks')
     check.add_argument('--comfy-url', default=os.getenv('COMFY_URL'))

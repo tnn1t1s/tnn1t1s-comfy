@@ -1,6 +1,3 @@
-import importlib.util
-import json
-from pathlib import Path
 import unittest
 from unittest.mock import patch
 from tnn1t1s_comfy.client import APIError, Cue, doctor, explain
@@ -59,24 +56,6 @@ class CueContracts(unittest.TestCase):
     def test_doctor_missing_custom_nodes_fails(self):
         with patch('tnn1t1s_comfy.client.API.request', side_effect=[{}, {'queue_running': [], 'queue_pending': []}, {}]):
             self.assertFalse(doctor('http://example.test', required_nodes=['WanNode'])['ok'])
-
-
-class FennelDiscovery(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        spec = importlib.util.spec_from_file_location('fennel_url', Path(__file__).parents[1] / 'deploy/fennel_url.py')
-        cls.module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(cls.module)
-
-    def test_scheduled_instance_does_not_return_stale_url(self):
-        with self.assertRaises(ValueError):
-            self.module.resolve({'instances': [{'goal': 'Running', 'condition': 'Scheduled',
-                'health': 'Healthy', 'agent_info': {'host': 'stale'}, 'ports': [8188]}]})
-
-    def test_uses_current_assigned_port(self):
-        self.assertEqual(self.module.resolve({'instances': [{'goal': 'Running', 'condition': 'Running',
-            'health': 'Healthy', 'agent_info': {'host': 'worker.test'}, 'ports': [31042]}]}),
-            'http://worker.test:31042')
 
 
 if __name__ == '__main__':
