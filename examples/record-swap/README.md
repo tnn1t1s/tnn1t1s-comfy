@@ -87,7 +87,7 @@ flowchart TB
 
 ## Where it runs
 
-The ComfyUI server runs as a long-running service on a self-hosted GPU cluster. A cluster manager offers each node's CPUs, memory and GPUs to two schedulers: Fennel runs long-running services and Cue runs finite batch jobs. Clients reach a Fennel service through a load balancer on a fixed service port, so the address stays the same when the service moves to another instance. Fennel services and Cue jobs share the GPU node, an NVIDIA GB10.
+The ComfyUI server runs as a long-running service on Medios, a self-hosted GPU cluster. The Medios controller offers each Medios node's CPUs, memory and GPUs to two schedulers: Fennel runs long-running services and Cue runs finite batch jobs. Clients reach a Fennel service through a load balancer on a fixed service port, so the address stays the same when the service moves to another instance. Fennel services and Cue jobs share the GPU node, an NVIDIA GB10.
 
 ```mermaid
 flowchart LR
@@ -98,15 +98,15 @@ flowchart LR
     ffmpeg["ffmpeg"]
   end
 
-  subgraph control ["Control host"]
+  subgraph control ["Medios controller"]
     direction TB
     lb["Fennel load balancer<br/>port 8188"]
     fennel["Fennel"]
     cue["Cue"]
-    mgr["Cluster manager"]
+    mgr["Resource offers"]
   end
 
-  subgraph gpu ["GPU node: NVIDIA GB10"]
+  subgraph gpu ["Medios node: NVIDIA GB10"]
     direction TB
     subgraph comfyapp ["ComfyUI service: 4 CPUs, 48 GB, GPU"]
       comfy["ComfyUI HTTP API"]
@@ -124,7 +124,7 @@ flowchart LR
   comfyapp --- store
 ```
 
-<p align="center"><em>Figure 4. Where each part runs: the scripts on the workstation, the schedulers and the load balancer on the control host, and the ComfyUI service on the GPU node.</em></p>
+<p align="center"><em>Figure 4. Where each part runs: the scripts on the workstation, the schedulers and the load balancer on the Medios controller, and the ComfyUI service on the Medios node.</em></p>
 
 The ComfyUI service stays up between runs, and Fennel scales it down to free the GPU when it is not needed. The workflow script calls only ComfyUI's HTTP API, so it runs unchanged against any ComfyUI server that has these node packs.
 
