@@ -37,6 +37,108 @@ ffmpeg -framerate 24000/1001 -pattern_type glob -i 'out/frame_*.png' -i footage/
 cd ComfyUI-PlanarTrack && uv run --with numpy --with opencv-python-headless python -m unittest test_composite.py
 ```
 
+## Workflow graph
+
+`run_swap.py` queues one ComfyUI graph for the whole clip. Each box is a ComfyUI node, named by its class, and the slanted boxes are files or tools outside ComfyUI. Shots 1 and 3 run the same chain of segment, track and composite. Shot 1 reverses its frames first, because SAM2 is prompted on its last frame, where the cover faces the camera.
+
+```mermaid
+flowchart LR
+  src[/"footage/record-swap-src.mp4"/] --> load["LoadVideo"] --> comp["GetVideoComponents"]
+  sam["DownloadAndLoadSAM2Model<br/>sam2.1_hiera_large, bf16"]
+  ringo["LoadImage<br/>Ringo front"]
+  front["LoadImage<br/>Hello Bastards front"]
+  back["LoadImage<br/>Hello Bastards back"]
+
+  subgraph s1 ["Shot 1, frames 0-33"]
+    r1["GetImageRangeFromBatch"] --> rev["ReverseImageBatch"]
+    rev --> seg1["SAM2 sleeve mask"]
+    rev --> hand1["SAM2 hand mask"]
+    keys[/"keys_s1.json"/] --> at1["ArtworkTrack"]
+    r1 --> at1
+    seg1 --> at1
+    hand1 --> at1
+    at1 -- "corners" --> c1["CompositeIntoQuads<br/>back on frames 0-8, front after"]
+    seg1 --> c1
+    hand1 --> c1
+  end
+
+  subgraph s2 ["Shot 2, frames 34-53"]
+    r2["GetImageRangeFromBatch"] --> c2["CompositeIntoQuads<br/>blur sigma 9 px, no masks"]
+    q2[/"quads_s2.json"/] -- "corners" --> c2
+  end
+
+  subgraph s3 ["Shot 3, frames 54-78"]
+    r3["GetImageRangeFromBatch"] --> seg3["SAM2 sleeve mask"]
+    r3 --> hand3["SAM2 hand mask"]
+    r3 --> at3["ArtworkTrack"]
+    seg3 --> at3
+    hand3 --> at3
+    at3 -- "corners" --> c3["CompositeIntoQuads"]
+    seg3 --> c3
+    hand3 --> c3
+  end
+
+  comp --> r1
+  comp --> r2
+  comp --> r3
+  sam --> seg1
+  sam --> hand1
+  sam --> seg3
+  sam --> hand3
+  ringo --> at1
+  ringo --> at3
+  front --> c1
+  back --> c1
+  back --> c2
+  front --> c3
+  measure[/"measure_s2.py"/] -.-> q2
+  c1 --> b1["ImageBatch"]
+  c2 --> b1
+  b1 --> b2["ImageBatch"]
+  c3 --> b2
+  b2 --> save["SaveImage<br/>79 PNG frames"]
+  save -.-> enc[/"ffmpeg: H.264 plus source audio"/]
+```
+
+## Where it runs
+
+The ComfyUI server runs as a long-running service on a self-hosted GPU cluster. A cluster manager offers each node's CPUs, memory and GPUs to two schedulers: Fennel runs long-running services and Cue runs finite batch jobs. Clients reach a Fennel service through a load balancer on a fixed service port, so the address stays the same when the service moves to another instance. Fennel services and Cue jobs share the GPU node, an NVIDIA GB10.
+
+```mermaid
+flowchart TB
+  subgraph client ["Workstation"]
+    runswap["run_swap.py<br/>builds the graph, uploads inputs,<br/>polls /history, downloads frames"]
+    measure["measure_s2.py<br/>shot 2 corners"]
+    ffmpeg["ffmpeg<br/>final encode"]
+  end
+
+  subgraph control ["Control host"]
+    mgr["Cluster manager<br/>resource offers"]
+    fennel["Fennel<br/>long-running services"]
+    cue["Cue<br/>finite batch jobs"]
+    lb["Fennel load balancer<br/>service port 8188"]
+  end
+
+  subgraph gpu ["GPU node: NVIDIA GB10"]
+    subgraph comfyapp ["Fennel service: ComfyUI container, 4 CPUs, 48 GB, GPU"]
+      comfy["ComfyUI HTTP API<br/>/upload/image, /prompt, /history, /view"]
+      nodes["custom_nodes<br/>ComfyUI-PlanarTrack<br/>ComfyUI-segment-anything-2<br/>ComfyUI-KJNodes"]
+      comfy --- nodes
+    end
+    store[("Shared results store, mounted at /models<br/>SAM2 weights, node overlay, start script")]
+    cuejob["Cue job containers<br/>for example the Reel render"]
+  end
+
+  runswap -- "HTTP" --> lb --> comfy
+  mgr -- "offers" --> fennel
+  mgr -- "offers" --> cue
+  fennel -- "places and restarts" --> comfyapp
+  cue -- "runs" --> cuejob
+  comfyapp --- store
+```
+
+This example talks to a ComfyUI service that stays up between runs. The rest of this repository wraps ComfyUI differently: its gateway keeps the ComfyUI UI and API up, and each render runs as a finite Cue job that exits once its outputs are published. The workflow script calls only ComfyUI's HTTP API, so it runs unchanged against either setup, and against any other ComfyUI server that has these node packs.
+
 ## 1. Source footage
 
 The source is the YouTube upload "500 Days Of Summer - I think we should stop seeing each other" (uploader hotjonn, `up58hkyvX_w`). yt-dlp fetched 1:16 to 1:25 with a margin on each side, at up to 1080 lines, with keyframes forced at the cuts:
