@@ -90,34 +90,36 @@ flowchart TB
 The ComfyUI server runs as a long-running service on a self-hosted GPU cluster. A cluster manager offers each node's CPUs, memory and GPUs to two schedulers: Fennel runs long-running services and Cue runs finite batch jobs. Clients reach a Fennel service through a load balancer on a fixed service port, so the address stays the same when the service moves to another instance. Fennel services and Cue jobs share the GPU node, an NVIDIA GB10.
 
 ```mermaid
-flowchart TB
+flowchart LR
   subgraph client ["Workstation"]
-    runswap["run_swap.py<br/>builds the graph, uploads inputs,<br/>polls /history, downloads frames"]
-    measure["measure_s2.py<br/>shot 2 corners"]
-    ffmpeg["ffmpeg<br/>final encode"]
+    direction TB
+    runswap["run_swap.py"]
+    measure["measure_s2.py"]
+    ffmpeg["ffmpeg"]
   end
 
   subgraph control ["Control host"]
-    mgr["Cluster manager<br/>resource offers"]
-    fennel["Fennel<br/>long-running services"]
-    cue["Cue<br/>finite batch jobs"]
-    lb["Fennel load balancer<br/>service port 8188"]
+    direction TB
+    lb["Fennel load balancer<br/>port 8188"]
+    fennel["Fennel"]
+    cue["Cue"]
+    mgr["Cluster manager"]
   end
 
   subgraph gpu ["GPU node: NVIDIA GB10"]
-    subgraph comfyapp ["Fennel service: ComfyUI container, 4 CPUs, 48 GB, GPU"]
-      comfy["ComfyUI HTTP API<br/>/upload/image, /prompt, /history, /view"]
-      nodes["custom_nodes<br/>ComfyUI-PlanarTrack<br/>ComfyUI-segment-anything-2<br/>ComfyUI-KJNodes"]
-      comfy --- nodes
+    direction TB
+    subgraph comfyapp ["ComfyUI service: 4 CPUs, 48 GB, GPU"]
+      comfy["ComfyUI HTTP API"]
+      nodes["Custom nodes: PlanarTrack,<br/>segment-anything-2, KJNodes"]
     end
-    store[("Shared results store, mounted at /models<br/>SAM2 weights, node overlay, start script")]
-    cuejob["Cue job containers<br/>for example the Reel render"]
+    store[("Shared store<br/>at /models")]
+    cuejob["Cue jobs"]
   end
 
   runswap -- "HTTP" --> lb --> comfy
   mgr -- "offers" --> fennel
   mgr -- "offers" --> cue
-  fennel -- "places and restarts" --> comfyapp
+  fennel -- "runs" --> comfyapp
   cue -- "runs" --> cuejob
   comfyapp --- store
 ```
