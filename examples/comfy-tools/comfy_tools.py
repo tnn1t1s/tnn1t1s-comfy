@@ -181,7 +181,9 @@ def review_sheet(refs, roles, sheet, path, height=240):
     width = int(probe_image_width(sheet))
     inputs = [arg for role in roles for arg in ('-i', str(refs[role]))]
     scaled = ''.join(f'[{i}]scale=-2:{height}[r{i}];' for i in range(len(roles)))
-    stacked = ''.join(f'[r{i}]' for i in range(len(roles))) + f'hstack={len(roles)},pad={width}:{height}:(ow-iw)/2:0[refs];'
+    # ffmpeg's hstack refuses fewer than two inputs, so a clip with one person goes straight to pad.
+    join = f'hstack={len(roles)},' if len(roles) > 1 else ''
+    stacked = ''.join(f'[r{i}]' for i in range(len(roles))) + f'{join}pad={width}:{height}:(ow-iw)/2:0[refs];'
     sh('ffmpeg', '-v', 'error', '-y', *inputs, '-i', str(sheet), '-filter_complex',
        scaled + stacked + f'[refs][{len(roles)}]vstack', str(path))
 
@@ -300,6 +302,12 @@ def wan_render(args, roles, refs, trimmed, out, clip):
             cmd.append('--no-redraw')
         if args.wan_outfit:
             cmd += ['--redraw-prompt', WAN_OUTFIT_PROMPT.format(who=people[role]['who'])]
+        if people[role].get('reference_at') is not None:
+            at = people[role]['reference_at'] - start
+            if not 0 <= at < end - start:
+                raise SystemExit(f'--engine wan: {role} reference_at {people[role]["reference_at"]:g} s is outside '
+                                 f'the cut {start:g}-{end:g} s')
+            cmd += ['--reference-frame', f'{at:.3f}']
         print(f'wan pass: {role} ({people[role]["who"]}), points {points}', flush=True)
         sh(*cmd)
         current = target
@@ -307,6 +315,58 @@ def wan_render(args, roles, refs, trimmed, out, clip):
                               'seed': args.seed, 'reference_changes': effective,
                               'scaled_size': f'{scaled[0]}x{scaled[1]}',
                               'render_seconds': round(time.time() - started)}
+
+
+# Shortest piece of a shot a cut may leave to render. Heuristic: under 0.5 s is 8 frames at Wan's 16 fps, too
+# few for the person mask to settle; a cut that ends that close to a shot boundary should move to it.
+MIN_SHOT_S = 0.5
+
+
+def shots_render(args, roles, refs, trimmed, out, clip, start, duration):
+    """Render each catalogued shot inside the cut as its own Wan job and join them in order.
+
+    A clip with hard cuts gives one reference (redrawn from frame 0) and one set of points (on frame 0) for
+    the whole render, and the person mask has to carry across every cut. Per shot, the reference is redrawn
+    from that shot's own framing and the points are placed on its first frame. Each shot entry overrides
+    the clip's people[role] fields (points, who, reference_at) for its span; times are source seconds."""
+    end = start + duration
+    pieces = []
+    for n, shot in enumerate(clip['shots'], 1):
+        a, b = max(shot['start'], start), min(shot['end'], end)
+        if b <= a:
+            continue
+        if b - a < MIN_SHOT_S:
+            bounds = sorted({s['start'] for s in clip['shots']} | {s['end'] for s in clip['shots']})
+            raise SystemExit(f'shot {n} would be {b - a:.2f} s inside the cut {start:g}-{end:g} s, under '
+                             f'{MIN_SHOT_S} s; move --start/--end to a shot boundary: {bounds}')
+        pieces.append((n, shot, a, b))
+    if not pieces:
+        raise SystemExit(f'no catalogued shot overlaps the cut {start:g}-{end:g} s')
+    rendered, shot_info, started = [], [], time.time()
+    for n, shot, a, b in pieces:
+        shot_dir = out / f'shot-{n}'
+        shot_dir.mkdir(exist_ok=True)
+        piece = shot_dir / 'clip.mp4'
+        sh('ffmpeg', '-v', 'error', '-y', '-ss', f'{a - start:.4f}', '-t', f'{b - a:.4f}', '-i', str(trimmed),
+           '-c:v', 'libx264', '-crf', str(TRIM_CRF), '-pix_fmt', 'yuv420p', '-c:a', 'aac', str(piece))
+        people = {role: {**clip['people'][role], **shot.get('people', {}).get(role, {})} for role in clip['people']}
+        print(f'shot {n}: {a:g}-{b:g} s', flush=True)
+        args.cut = (a, b)
+        result, info = wan_render(args, roles, refs, piece, shot_dir, {**clip, 'people': people})
+        made = probe(result)
+        rendered.append(result)
+        # Wan renders at 16 fps, so each shot comes back rounded to whole frames; the drift adds up across shots.
+        shot_info.append({'shot': n, 'start': a, 'end': b, 'render_seconds': info['render_seconds'],
+                          'rendered_s': made['duration'], 'drift_s': round(made['duration'] - (b - a), 3)})
+    joined = out / 'swap.mp4'
+    inputs = [arg for path in rendered for arg in ('-i', str(path))]
+    chain = ''.join(f'[{i}:v]' for i in range(len(rendered))) + f'concat=n={len(rendered)}:v=1:a=0[v]'
+    sh('ffmpeg', '-v', 'error', '-y', *inputs, '-filter_complex', chain, '-map', '[v]',
+       '-c:v', 'libx264', '-crf', str(TRIM_CRF), '-pix_fmt', 'yuv420p', str(joined))
+    args.cut = (start, end)
+    return joined, {'engine': 'wan', 'reference': args.wan_reference, 'outfit': args.wan_outfit,
+                    'short_side': args.wan_short_side, 'seed': args.seed, 'shots': shot_info,
+                    'render_seconds': round(time.time() - started)}
 
 
 def finish(args, clip, picture, sound, tracks, out, stem, start, duration):
@@ -360,15 +420,19 @@ def swap(args):
         videos, caption_info = finish(args, clip if renames else {}, trimmed, trimmed, tracks, out, 'dub',
                                       start, duration)
     else:
-        if args.engine == 'wan':
+        by_shot = args.engine == 'wan' and bool(clip.get('shots'))
+        if by_shot:
+            result, engine_info = shots_render(args, roles, refs, trimmed, out, clip, start, duration)
+        elif args.engine == 'wan':
             result, engine_info = wan_render(args, roles, refs, trimmed, out, clip)
         else:
             render = facefusion_render if args.engine == 'facefusion' else reactor_render
             result, engine_info = render(args, roles, refs, trimmed, out)
         # Kept under its own name: `dub --video` takes this file to change song or artist without rendering.
         render_file = result.rename(out / 'swap-render.mp4')
-        videos, caption_info = finish(args, clip if args.engine == 'wan' else {}, render_file, render_file,
-                                      tracks, out, 'swap', start, duration)
+        # Joined shots have no sound of their own; the cut's original sound goes under them.
+        videos, caption_info = finish(args, clip if args.engine == 'wan' else {}, render_file,
+                                      trimmed if by_shot else render_file, tracks, out, 'swap', start, duration)
     engine_info.update(audio=audio_info, captions=caption_info, render=str(render_file))
 
     source_info, result_info = probe(trimmed), probe(videos[0])

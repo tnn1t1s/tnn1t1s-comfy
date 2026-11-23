@@ -1,14 +1,18 @@
 #!/bin/sh
-# Put two people from your photos into the elevator clip with Wan 2.2 Animate, and optionally change
-# its song and the artist it names.
-#   bin/swap [--male PHOTO] [--female PHOTO] [--outfit] [--start S] [--end S] [--seed N]
+# Put people from your photos into a catalogued clip with Wan 2.2 Animate, and optionally change its
+# song and the artist it names.
+#   bin/swap [--clip NAME] [--male PHOTO] [--female PHOTO] [--outfit] [--start S] [--end S] [--seed N]
 #            [--song FILE] [--song-start S] [--song-level DB] [--artist NAME] [--take N] [--comfy-url URL]
 # --male and --female are each optional: a person with no photo stays as they are in the clip. With
 #   neither, the clip's own picture is kept and only --song and --artist apply (about a minute, no render).
-#   bin/swap --video RENDER.mp4 [--song FILE] [--song-start S] [--song-level DB] [--artist NAME] [--take N]
+#   bin/swap [--clip NAME] --video RENDER.mp4 [--song FILE] [--song-start S] [--song-level DB] [--artist NAME] [--take N]
 #            [--start S] [--comfy-url URL]
-# --start and --end pick the part of the clip, in seconds; the default is 0 to 3 and the clip's two-shot
-#   runs to about 24. Observed on the A100: 0 to 24 took about 950 s for both people.
+# --clip picks the source video from examples/comfy-tools/clips.json (default the-smiths, the elevator
+#   scene). last-nite is the Strokes' Last Nite video, 1:06 to 1:16, with the singer as --male.
+#   --song and --artist need the clip's dialogue and captions catalogued; only the-smiths has them.
+# --start and --end pick the part of the source video, in seconds; the default starts at the clip's
+#   catalogued start and runs 3 s. the-smiths' two-shot runs 0 to about 24. Observed on the A100:
+#   0 to 24 took about 950 s for both people.
 # --outfit also carries over the clothing in each photo; use photos that show it (waist-up or wider).
 # --song replaces the music in the clip with your audio file, from --song-start seconds in, played low
 #   with reverb and no bass. --song-level sets how loud, in dB (default -27; higher is louder).
@@ -17,24 +21,25 @@
 #   (take-1.mp4 ...) to choose by ear; --take N writes only that one. Mouths are not changed.
 # --video applies --song and --artist to an earlier render (swap-render.mp4 in a results folder) without
 #   rendering again: about a minute. --start is the clip second that render begins at.
-# --comfy-url picks the ComfyUI server; the default is the one on the A100 node.
+# --comfy-url picks the ComfyUI server; the default is the running instance of the fennel app
+#   svc/meme-swap-comfy on spark, whose port fennel assigns at each start.
 # The captions are redrawn on every render, and the man's headphones are handled where he takes them off.
 # With a photo: sends frames of the clip and each photo given to OpenRouter to redraw the reference images.
 set -eu
 usage() {
-  echo "usage: bin/swap [--male PHOTO] [--female PHOTO] [--outfit] [--start S] [--end S] [--seed N] [--song FILE] [--song-start S] [--song-level DB] [--artist NAME] [--take N] [--comfy-url URL]" >&2
-  echo "       bin/swap --video RENDER.mp4 [--song FILE] [--song-start S] [--song-level DB] [--artist NAME] [--take N] [--start S] [--comfy-url URL]" >&2
+  echo "usage: bin/swap [--clip NAME] [--male PHOTO] [--female PHOTO] [--outfit] [--start S] [--end S] [--seed N] [--song FILE] [--song-start S] [--song-level DB] [--artist NAME] [--take N] [--comfy-url URL]" >&2
+  echo "       bin/swap [--clip NAME] --video RENDER.mp4 [--song FILE] [--song-start S] [--song-level DB] [--artist NAME] [--take N] [--start S] [--comfy-url URL]" >&2
   exit 2
 }
-outfit="" start=0 end=3 comfy_url=http://100.124.180.19:33001 male="" female="" video="" song="" song_start=0
+clip=the-smiths outfit="" start="" end="" comfy_url="" male="" female="" video="" song="" song_start=0
 song_level="" artist="" take="" seed=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --outfit) outfit="--wan-outfit"; shift ;;
-    --male|--female|--start|--end|--comfy-url|--video|--song|--song-start|--song-level|--artist|--take|--seed)
+    --clip|--male|--female|--start|--end|--comfy-url|--video|--song|--song-start|--song-level|--artist|--take|--seed)
       [ $# -ge 2 ] || usage
       case "$1" in
-        --male) male=$2 ;; --female) female=$2 ;; --start) start=$2 ;; --end) end=$2 ;;
+        --clip) clip=$2 ;; --male) male=$2 ;; --female) female=$2 ;; --start) start=$2 ;; --end) end=$2 ;;
         --comfy-url) comfy_url=$2 ;; --video) video=$2 ;; --song) song=$2 ;; --song-start) song_start=$2 ;;
         --song-level) song_level=$2 ;; --artist) artist=$2 ;; --take) take=$2 ;; --seed) seed=$2 ;;
       esac
@@ -43,6 +48,25 @@ while [ $# -gt 0 ]; do
   esac
 done
 repo=$(cd "$(dirname "$0")/.." && pwd)
+catalog="$repo/examples/comfy-tools/clips.json"
+clip_start=$(python3 -c 'import json, sys
+c = json.load(open(sys.argv[1]))
+sys.exit("bin/swap: unknown clip %s; catalog: %s" % (sys.argv[2], ", ".join(sorted(c)))) if sys.argv[2] not in c else print(c[sys.argv[2]]["start"])' \
+  "$catalog" "$clip") || exit 2
+[ -n "$start" ] || start=$clip_start
+# Default length of a render: a 3 s probe (one Wan sampling pass is about 4.5 s of clip).
+[ -n "$end" ] || end=$(awk -v s="$start" 'BEGIN { print s + 3 }')
+if [ -z "$comfy_url" ]; then
+  # The app pins its host with a hostname constraint; the instance reports only its port.
+  comfy_url=$(curl -sf --max-time 10 "$(medios-endpoint fennel)/v2/apps/svc/meme-swap-comfy" | python3 -c 'import json, sys
+d = json.load(sys.stdin)
+hosts = [c[2] for c in d.get("constraints", []) if c[0] == "hostname"]
+ports = [i["ports"][0] for i in d.get("instances", []) if i.get("condition") == "Running" and i.get("ports")]
+if len(hosts) != 1 or not ports:
+    sys.exit("bin/swap: svc/meme-swap-comfy has no running instance with a port (hosts %s, ports %s); "
+             "scale it with PUT /v2/apps/svc/meme-swap-comfy {\"instances\": 1} or pass --comfy-url" % (hosts, ports))
+print("http://%s:%s" % (hosts[0], ports[0]))') || exit 1
+fi
 [ -z "$song" ] || [ -f "$song" ] || { echo "bin/swap: no such song file: $song" >&2; exit 2; }
 [ -z "$take" ] || [ -n "$artist" ] || { echo "bin/swap: --take needs --artist" >&2; exit 2; }
 set --
@@ -59,7 +83,7 @@ if [ -n "$video" ]; then
   [ -f "$video" ] || { echo "bin/swap: no such video: $video" >&2; exit 2; }
   [ $# -gt 0 ] || { echo "bin/swap: --video needs --song, --artist or both" >&2; usage; }
   cd "$repo"
-  exec $tool dub --clip the-smiths --video "$video" \
+  exec $tool dub --clip "$clip" --video "$video" \
     --out "$HOME/Desktop/dub-$(date +%Y%m%d-%H%M%S)" --start "$start" --comfy-url "$comfy_url" "$@"
 fi
 [ -n "$male$female" ] || [ $# -gt 0 ] || { echo "bin/swap: give --male or --female, --song or --artist" >&2; usage; }
@@ -78,6 +102,6 @@ if [ -n "$male$female" ]; then
 fi
 out="$HOME/Desktop/swap-$(date +%Y%m%d-%H%M%S)"
 cd "$repo"
-exec $tool swap --clip the-smiths \
+exec $tool swap --clip "$clip" \
   --out "$out" --start "$start" --duration "$duration" \
   --comfy-url "$comfy_url" --meme-swap-dir "$meme_swap" --wan-reference redraw $outfit "$@"

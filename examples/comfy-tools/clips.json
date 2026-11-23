@@ -215,5 +215,118 @@
         ]
       }
     ]
+  },
+  "last-nite": {
+    "url": "https://www.youtube.com/watch?v=TOypSnKFHrE",
+    "start": 66,
+    "duration": 9.9277,
+    "faces_left_to_right": [
+      "male"
+    ],
+    "people": {
+      "male": {
+        "who": "the singer in the grey denim jacket holding the microphone",
+        "points": [
+          [
+            0.41,
+            0.23
+          ],
+          [
+            0.42,
+            0.48
+          ]
+        ]
+      }
+    },
+    "shots": [
+      {
+        "start": 66.0,
+        "end": 67.0527,
+        "what": "wide, red stage",
+        "people": {
+          "male": {
+            "points": [
+              [
+                0.41,
+                0.23
+              ],
+              [
+                0.42,
+                0.48
+              ]
+            ]
+          }
+        }
+      },
+      {
+        "start": 67.0527,
+        "end": 70.923,
+        "what": "medium on the singer; the lights turn from red to blue and he turns his back",
+        "people": {
+          "male": {
+            "points": [
+              [
+                0.65,
+                0.19
+              ],
+              [
+                0.67,
+                0.4
+              ],
+              [
+                0.65,
+                0.82
+              ]
+            ]
+          }
+        }
+      },
+      {
+        "start": 70.923,
+        "end": 74.0259,
+        "what": "close-up; opens on the back of his head, turns to face the camera",
+        "people": {
+          "male": {
+            "who": "the singer in the grey denim jacket singing into the microphone, close to the camera",
+            "points": [
+              [
+                0.63,
+                0.19
+              ],
+              [
+                0.62,
+                0.6
+              ]
+            ],
+            "reference_at": 72.423
+          }
+        }
+      },
+      {
+        "start": 74.0259,
+        "end": 75.9277,
+        "what": "wide, blue stage; singer in the centre",
+        "people": {
+          "male": {
+            "who": "the singer in the grey denim jacket in the centre, holding the microphone",
+            "points": [
+              [
+                0.56,
+                0.28
+              ],
+              [
+                0.58,
+                0.48
+              ],
+              [
+                0.59,
+                0.78
+              ]
+            ]
+          }
+        }
+      }
+    ],
+    "note": "The Strokes, Last Nite (official video), 1:06-1:15.93. Five-piece band on a TV stage, four shots rendered one job each (shots). Only the singer is catalogued. Shot boundaries are half a frame before each cut that ffmpeg scdet found; the next cut, at 9.94 s, ends the clip."
   }
 }
